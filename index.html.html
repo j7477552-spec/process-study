@@ -4,12 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>반도체 8대 공정 & L02 포토 심화 스터디랩</title>
-  
-  <!-- 수식 렌더링 라이브러리 KaTeX -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" />
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
-
   <style>
     :root {
       --bg-dark: #090d16;
@@ -292,10 +286,11 @@
       display: inline-block;
       background: rgba(56, 189, 248, 0.15);
       color: var(--accent-blue);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.86rem;
-      font-family: monospace;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
     }
 
     .param-list {
@@ -339,9 +334,6 @@
     textarea.notes-area:focus { border-color: var(--accent-blue); }
     .save-alert { font-size: 0.82rem; color: #10b981; margin-top: 6px; display: none; }
 
-    /* KaTeX 수식 전용 스타일 정돈 */
-    .katex { font-size: 1.05em; color: #e0f2fe; }
-
     @media (max-width: 768px) {
       body { flex-direction: column; overflow-y: auto; height: auto; }
       aside { width: 100%; height: auto; border-right: none; }
@@ -366,7 +358,7 @@
     </header>
 
     <div class="content-grid">
-      <!-- 1. CMOS 시뮬레이터 카드 (CMOS 선택 시 활성화) -->
+      <!-- 1. CMOS 시뮬레이터 카드 -->
       <div class="card" id="cmosCard" style="display:none;">
         <div class="card-title">🖥️ CMOS 전공정 연속 단면 시뮬레이션 (Twin-Well to Metal-1)</div>
         <div class="sim-box">
@@ -376,7 +368,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
               <div style="display:flex; gap:8px;">
                 <button class="btn btn-primary" id="cmosPlayBtn" onclick="toggleCmosPlay()">▶ 전체 공정 연속 재생</button>
-                <button class="btn btn-secondary" onclick="resetCmos()">⏮️️ 처음으로</button>
+                <button class="btn btn-secondary" onclick="resetCmos()">⏮ 처음으로</button>
               </div>
               <div id="cmosStageBadge" style="font-size:0.86rem; color:var(--accent-blue); font-weight:600;">대기 중</div>
             </div>
@@ -642,7 +634,7 @@
     };
 
     // =========================================================================
-    // 통합 데이터베이스 (수식 파싱 보정)
+    // 통합 데이터베이스 (완전 자체 HTML/유니코드 서식 적용)
     // =========================================================================
     const fabStructure = [
       {
@@ -663,7 +655,7 @@
                     <p>고순도 다결정 규소(EGS)를 도가니에 넣고 약 1420℃에서 용융시킨 뒤, 종결정(Seed Crystal)을 회전 접촉시키며 서서히 인상하여 원통형 단결정 잉곳을 성장시킵니다.</p>
                     <ul>
                       <li><strong>결정 방위</strong>: CMOS 제조에는 표면 결함(Dangling bond) 밀도가 낮고 산화막 계면 특성이 우수한 <strong>(100) 결정면</strong>을 표준으로 사용합니다.</li>
-                      <li><strong>산소/탄소 불순물 제어</strong>: 도가니 석영($\\text{SiO}_2$)이 녹아들며 산소가 미량 침투하지만, 이는 웨이퍼 내부 게터링(Internal Gettering) 효과를 돕습니다.</li>
+                      <li><strong>산소/탄소 불순물 제어</strong>: 도가니 석영(SiO₂)이 녹아들며 산소가 미량 침투하지만, 이는 웨이퍼 내부 게터링(Internal Gettering) 효과를 돕습니다.</li>
                     </ul>
                   </div>
                   <div class="theory-section">
@@ -697,18 +689,18 @@
                 descHtml: `
                   <div class="theory-section">
                     <h3>🔥 열산화 메커니즘 & 반응 속도론</h3>
-                    <p>실리콘 표면에 고온(800~1100℃)에서 산소 또는 수증기를 공급하여 치밀한 절연체인 $\\text{SiO}_2$를 성장시킵니다.</p>
+                    <p>실리콘 표면에 고온(800~1100℃)에서 산소 또는 수증기를 공급하여 치밀한 절연체인 SiO₂를 성장시킵니다.</p>
                     <ul>
-                      <li><strong>건식 산화 (Dry Oxidation)</strong>: $\\text{Si} + \\text{O}_2 \\rightarrow \\text{SiO}_2$<br>산소 분자 확산이 느려 성장 속도는 더디지만 막질 밀도가 매우 치밀하고 계면 준위 결함이 낮아 얇은 <strong>Gate Oxide</strong> 형성에 필수적입니다.</li>
-                      <li><strong>습식 산화 (Wet Oxidation)</strong>: $\\text{Si} + 2\\text{H}_2\\text{O} \\rightarrow \\text{SiO}_2 + 2\\text{H}_2$<br>수증기($\\text{H}_2\\text{O}$)의 확산 속도가 훨씬 빠르므로 건식 대비 5~10배 빠르게 두꺼운 <strong>Field Oxide</strong>를 만듭니다.</li>
+                      <li><strong>건식 산화 (Dry Oxidation)</strong>: Si + O₂ → SiO₂<br>산소 분자 확산이 느려 성장 속도는 더디지만 막질 밀도가 매우 치밀하고 계면 준위 결함이 낮아 얇은 <strong>Gate Oxide</strong> 형성에 필수적입니다.</li>
+                      <li><strong>습식 산화 (Wet Oxidation)</strong>: Si + 2H₂O → SiO₂ + 2H₂<br>수증기(H₂O)의 확산 속도가 훨씬 빠르므로 건식 대비 5~10배 빠르게 두꺼운 <strong>Field Oxide</strong>를 만듭니다.</li>
                     </ul>
                   </div>
                   <div class="theory-section">
                     <h3>📊 Deal-Grove 산화 속도 모델</h3>
-                    <p>산화막 두께 $x_0$와 시간 $t$의 관계: $x_0^2 + A x_0 = B(t + \\tau)$</p>
+                    <p>산화막 두께 x₀와 시간 t의 관계: x₀² + A·x₀ = B·(t + τ)</p>
                     <ul>
-                      <li><strong>초기 선형 영역</strong>: $x_0 \\approx \\frac{B}{A}(t + \\tau)$ (표면 화학 반응 율속)</li>
-                      <li><strong>후기 포물선 영역</strong>: $x_0^2 \\approx B t$ (산화막 내부로의 확산 율속)</li>
+                      <li><strong>초기 선형 영역</strong>: x₀ ≈ (B/A)·(t + τ) (표면 화학 반응 율속)</li>
+                      <li><strong>후기 포물선 영역</strong>: x₀² ≈ B·t (산화막 내부로의 확산 율속)</li>
                     </ul>
                   </div>
                 `,
@@ -750,8 +742,8 @@
                     <h3>🔥 3대 Baking 공정의 기능적 분리</h3>
                     <ul>
                       <li><span class="code-badge">Soft Bake</span>: 감광액 도포 직후 용매 제거 및 노광 감도 안정화</li>
-                      <li><span class="code-badge">PEB</span>: 기판 반사 간섭 톱니무늬 제거 및 DUV 광산($\\text{H}^+$) 연쇄 반응 활성화</li>
-                      <li><span class="code-badge">Hard Bake</span>: $T_g$(유리전이온도) 이상 가열로 Pinhole을 메우고 식각 플라즈마 충격 대비</li>
+                      <li><span class="code-badge">PEB</span>: 기판 반사 간섭 톱니무늬 제거 및 DUV 광산(H⁺) 연쇄 반응 활성화</li>
+                      <li><span class="code-badge">Hard Bake</span>: Tg(유리전이온도) 이상 가열로 Pinhole을 메우고 식각 플라즈마 충격 대비</li>
                     </ul>
                   </div>
                 `,
@@ -771,9 +763,9 @@
                 descHtml: `
                   <div class="theory-section">
                     <h3>🧪 HMDS 소수화 반응 메커니즘 (L02 p.11)</h3>
-                    <p>실리콘 웨이퍼 표면은 공기 중 수분과 결합하여 친수성($\\text{Si-OH}$)을 띱니다. 반면 Photoresist는 유기물 기반이므로 젖음성이 떨어져 접착 불량이 발생합니다.</p>
+                    <p>실리콘 웨이퍼 표면은 공기 중 수분과 결합하여 친수성(Si-OH)을 띱니다. 반면 Photoresist는 유기물 기반이므로 젖음성이 떨어져 접착 불량이 발생합니다.</p>
                     <ul>
-                      <li><strong>화학 치환</strong>: 웨이퍼를 <strong>HMDS</strong> 증기에 노출시키면 표면의 $\\text{-OH}$기가 소수성 작용기인 <strong>$\\text{-O-Si(CH}_3)_3$</strong>(트리메틸실릴기)로 치환되며 암모니아($\\text{NH}_3$)가 방출됩니다.</li>
+                      <li><strong>화학 치환</strong>: 웨이퍼를 <strong>HMDS</strong> 증기에 노출시키면 표면의 -OH기가 소수성 작용기인 <strong>-O-Si(CH₃)₃</strong>(트리메틸실릴기)로 치환되며 암모니아(NH₃)가 방출됩니다.</li>
                       <li><strong>접촉각 증가</strong>: 물 접촉각이 커지며 PR과의 결합력이 극대화되어, 알칼리 현상 시 패턴이 들뜨는(Pattern lifting) 현상을 차단합니다.</li>
                     </ul>
                   </div>
@@ -812,7 +804,7 @@
                     <h3>🎯 Stepper vs Scanner 광학계 진화 (L02 p.15, 16)</h3>
                     <ul>
                       <li><strong>밀착/근접 노광 한계</strong>: Contact 방식은 마스크 마모 파티클 불량, Proximity 방식은 근접장 회절 왜곡이 심각합니다.</li>
-                      <li><strong>축소 투영 (Projection Aligner)</strong>: 레티클(마스크)을 실제 칩 크기의 4배, 5배로 크게 제작하고 $4:1$ 축소 렌즈로 투영합니다.</li>
+                      <li><strong>축소 투영 (Projection Aligner)</strong>: 레티클(마스크)을 실제 칩 크기의 4배, 5배로 크게 제작하고 4:1 축소 렌즈로 투영합니다.</li>
                       <li><strong>Stepper</strong>: 렌즈 전면으로 일괄 노광하므로 가장자리에서 <strong>구면수차와 색수차</strong>가 발생합니다.</li>
                       <li><strong>Scanner</strong>: 직사각형 <strong>슬릿(Slit)</strong>을 통해 렌즈 중심부만 이용하며, 레티클과 웨이퍼를 동기 주사하여 수차를 최소화합니다.</li>
                     </ul>
@@ -836,17 +828,17 @@
                     <h3>🔬 레일리 분해능(Resolution)과 DOF의 트레이드오프 (L02 p.18, 32)</h3>
                     <p>포토 공정에서 형성 가능한 최소 선폭(Half Pitch)의 물리적 한계 공식입니다.</p>
                     <ul>
-                      <li><span class="code-badge">R = k_1 \\frac{\\lambda}{\\text{NA}}</span> : 분해능 R이 작을수록 미세 패턴 가공이 가능합니다. 파장($\\lambda$)을 줄이거나 개구수($\\text{NA}$)를 키워야 합니다.</li>
-                      <li><span class="code-badge">\\text{DOF} = k_2 \\frac{\\lambda}{\\text{NA}^2} = k_2 \\frac{R^2}{k_1^2 \\lambda}</span> : 상이 선명하게 맺히는 수직 깊이 허용 범위(초점심도)입니다.</li>
-                      <li><strong>치명적 딜레마</strong>: 선폭을 줄이기 위해 $\\text{NA}$를 키우면 $\\text{DOF}$는 <strong>$\\text{NA}$의 제곱에 반비례</strong>하여 극도로 얕아집니다. 이를 극복하기 위해 하부 단차를 없애는 <strong>CMP 평탄화</strong>가 필수적입니다.</li>
+                      <li><span class="code-badge">R = k₁ · (λ / NA)</span> : 분해능 R이 작을수록 미세 패턴 가공이 가능합니다. 파장(λ)을 줄이거나 개구수(NA)를 키워야 합니다.</li>
+                      <li><span class="code-badge">DOF = k₂ · (λ / NA²) = k₂ · [R² / (k₁² · λ)]</span> : 상이 선명하게 맺히는 수직 깊이 허용 범위(초점심도)입니다.</li>
+                      <li><strong>치명적 딜레마</strong>: 선폭을 줄이기 위해 NA를 키우면 DOF는 <strong>NA의 제곱에 반비례</strong>하여 극도로 얕아집니다. 이를 극복하기 위해 하부 단차를 없애는 <strong>CMP 평탄화</strong>가 필수적입니다.</li>
                     </ul>
                   </div>
                   <div class="theory-section">
                     <h3>🌊 ArF Immersion (액침 노광) 공법 (L02 p.20~22)</h3>
-                    <p>렌즈와 웨이퍼 사이의 빈 공간을 굴절률이 높은 <strong>초순수(Water, $n=1.44$)</strong>로 채워 노광합니다.</p>
+                    <p>렌즈와 웨이퍼 사이의 빈 공간을 굴절률이 높은 <strong>초순수(Water, n = 1.44)</strong>로 채워 노광합니다.</p>
                     <ul>
-                      <li><strong>원리</strong>: $\\text{NA} = n \\sin\\theta$. 매질의 굴절률 $n$이 증가하여 광학계의 $\\text{NA}$가 0.93에서 <strong>1.35</strong>로 증가합니다.</li>
-                      <li><strong>파장 단축 효과</strong>: $193\\text{nm}$ ArF 광원의 실효 파장이 $\\lambda' = \\lambda / n = 193 / 1.44 \\approx \\mathbf{134\\text{nm}}$로 줄어든 것과 완벽히 동일한 해상도 향상을 얻습니다.</li>
+                      <li><strong>원리</strong>: NA = n · sinθ. 매질의 굴절률 n이 증가하여 광학계의 NA가 0.93에서 <strong>1.35</strong>로 대폭 증가합니다.</li>
+                      <li><strong>파장 단축 효과</strong>: 193 nm ArF 광원의 실효 파장이 <strong>λ' = λ / n = 193 / 1.44 ≈ 134 nm</strong>로 줄어든 것과 완벽히 동일한 해상도 향상을 얻습니다.</li>
                     </ul>
                   </div>
                 `,
@@ -898,7 +890,7 @@
                       <li><strong>LELE (Litho-Etch-Litho-Etch)</strong>:
                         하드마스크 1차 노광/식각 후, 사이사이에 2차 노광/식각을 진행합니다. 비정형 패턴 형성이 용이하여 <strong>Logic 반도체</strong>에 쓰이지만, 오버레이 정렬 오차 위험이 큽니다.</li>
                       <li><strong>SADP (Self-Aligned Double Patterning)</strong>:
-                        1차 희생 패턴 형성 $\\rightarrow$ 스페이서 증착 $\\rightarrow$ 수직 에치백 $\\rightarrow$ 희생 패턴 제거. 스페이서 측벽 두께가 회로 선폭이 되므로 <strong>추가 노광 없이 피치가 절반으로 축소</strong>됩니다. 오버레이 오차가 없어 정형적인 <strong>DRAM Fin, Word Line, 3D NAND</strong>에 필수적입니다.</li>
+                        1차 희생 패턴 형성 → 스페이서 증착 → 수직 에치백 → 희생 패턴 제거. 스페이서 측벽 두께가 회로 선폭이 되므로 <strong>추가 노광 없이 피치가 절반으로 축소</strong>됩니다. 오버레이 오차가 없어 정형적인 <strong>DRAM Fin, Word Line, 3D NAND</strong>에 필수적입니다.</li>
                       <li><strong>SAQP</strong>: SADP를 2회 연속 수행하여 단일 노광 대비 <strong>4배의 패턴 밀도</strong>를 구현합니다.</li>
                     </ul>
                   </div>
@@ -919,16 +911,16 @@
                 descHtml: `
                   <div class="theory-section">
                     <h3>⚡ 극자외선(EUV) 노광 시스템 구조 (L02 p.26~29)</h3>
-                    <p>파장이 $13.5\\text{nm}$로 ArF 대비 1/14에 불과하여 $7\\text{nm}$ 이하 미세 공정의 표준입니다.</p>
+                    <p>파장이 <strong>13.5 nm</strong>로 ArF 대비 1/14에 불과하여 7 nm 이하 미세 공정의 표준입니다.</p>
                     <ul>
-                      <li><strong>전반사 거울 광학계</strong>: $13.5\\text{nm}$ 파장은 공기와 석영 렌즈에 100% 흡수되므로, 장비 내부를 <strong>초고진공</strong>으로 유지하고 투영 렌즈 대신 <strong>Mo-Si 6매 다층 반사거울(반사율 약 70%)</strong>과 반사형 마스크를 사용합니다.</li>
+                      <li><strong>전반사 거울 광학계</strong>: 13.5 nm 파장은 공기와 석영 렌즈에 100% 흡수되므로, 장비 내부를 <strong>초고진공</strong>으로 유지하고 투영 렌즈 대신 <strong>Mo-Si 6매 다층 반사거울(반사율 약 70%)</strong>과 반사형 마스크를 사용합니다.</li>
                       <li><strong>EUV 펠리클</strong>: 빛이 거울을 맞고 반사되어 총 2회 통과하므로 90% 이상의 극도로 높은 투과율이 요구됩니다.</li>
                     </ul>
                   </div>
                   <div class="theory-section">
                     <h3>📐 0.55 High-NA 애너모픽(Anamorphic) 기술 (L02 p.30, 31)</h3>
                     <ul>
-                      <li><strong>거울 대형화와 간섭 문제</strong>: $\\text{NA}$를 0.33에서 0.55로 키우려면 마지막 거울이 거대해져 마스크로 들어가는 입사빔과 반사빔이 서로 부딪히고 그림자 불량이 발생합니다.</li>
+                      <li><strong>거울 대형화와 간섭 문제</strong>: NA를 기존 0.33에서 0.55로 키우려면 마지막 거울이 거대해져 마스크로 들어가는 입사빔과 반사빔이 서로 부딪히고 그림자 불량이 발생합니다.</li>
                       <li><strong>Anamorphic 렌즈 채택</strong>: 원형 빛을 가로로 찌그러뜨려 타원형으로 바꾼 뒤, <strong>X축은 1/4 축소, Y축은 1/8 축소</strong>하는 비대칭 배율을 적용하여 빔 간섭을 완벽히 해결합니다.</li>
                     </ul>
                   </div>
@@ -951,16 +943,16 @@
                     <h3>💡 i-line용 DNQ-Novolac 감광 메커니즘 (L02 p.46~48)</h3>
                     <p>용매(PGME), 베이스 폴리머(Novolac), 감광제(DNQ PAC)의 3성분계입니다.</p>
                     <ul>
-                      <li><strong>노광 전</strong>: 소수성인 DNQ가 Novolac 수지의 $\\text{-OH}$기와 수소결합을 형성하여 알칼리 현상액에 녹지 못하도록 <strong>용해 억제제</strong> 역할을 합니다.</li>
-                      <li><strong>노광 후</strong>: $365\\text{nm}$ 자외선을 받으면 $\\text{N}_2$ 가스가 빠져나가며 카벤 생성 $\\rightarrow$ 케텐 형성 $\\rightarrow$ 수분과 반응하여 친수성인 <strong>Indene Carboxylic Acid</strong>로 전환됩니다. 수소결합이 풀리며 TMAH 현상액에 급속 용해됩니다.</li>
+                      <li><strong>노광 전</strong>: 소수성인 DNQ가 Novolac 수지의 -OH기와 수소결합을 형성하여 알칼리 현상액에 녹지 못하도록 <strong>용해 억제제</strong> 역할을 합니다.</li>
+                      <li><strong>노광 후</strong>: 365 nm 자외선을 받으면 N₂ 가스가 빠져나가며 카벤 생성 → 케텐 형성 → 수분과 반응하여 친수성인 <strong>Indene Carboxylic Acid</strong>로 전환됩니다. 수소결합이 풀리며 TMAH 현상액에 급속 용해됩니다.</li>
                     </ul>
                   </div>
                   <div class="theory-section">
                     <h3>⚡ DUV/EUV용 화학증폭형 감광제 (CAR) (L02 p.51~53)</h3>
                     <p>단파장에서는 Novolac 대신 PHOST/Acryl계를 쓰고, 약한 광량을 극복하기 위해 CAR 시스템을 도입했습니다.</p>
                     <ul>
-                      <li><strong>1단계 광산 방출</strong>: 노광 시 <strong>PAG(Photo Acid Generator)</strong>가 광반응하여 미량의 산($\\text{H}^+$ 프로톤)을 방출합니다.</li>
-                      <li><strong>2단계 화학 증폭</strong>: <strong>PEB 열처리</strong> 동안 방출된 $\\text{H}^+$가 중합체의 보호기(t-BOC)를 공격하여 $\\text{CO}_2$와 이소부틸렌을 방출시키고 친수성 $\\text{-OH}$기로 바꿉니다. 이때 $\\text{H}^+$는 소모되지 않고 <strong>수백 개의 보호기를 연쇄적으로 분해</strong>합니다.</li>
+                      <li><strong>1단계 광산 방출</strong>: 노광 시 <strong>PAG(Photo Acid Generator)</strong>가 광반응하여 미량의 산(H⁺ 프로톤)을 방출합니다.</li>
+                      <li><strong>2단계 화학 증폭</strong>: <strong>PEB 열처리</strong> 동안 방출된 H⁺가 중합체의 보호기(t-BOC)를 공격하여 CO₂와 이소부틸렌을 방출시키고 친수성 -OH기로 바꿉니다. 이때 H⁺는 소모되지 않고 <strong>수백 개의 보호기를 연쇄적으로 분해</strong>합니다.</li>
                       <li><strong>3단계 Quencher 중화</strong>: 과도한 산 확산으로 비노광부 패턴이 손상되는 것을 막기 위해 미량의 염기성 첨가제(Quencher)가 산을 포획 중화합니다.</li>
                     </ul>
                   </div>
@@ -983,8 +975,8 @@
                     <h3>📈 감광제 성능 지표 (Contrast Curve) (L02 p.57, 58)</h3>
                     <p>노광량(Dose, 로그 스케일)에 따른 현상 후 잔여 PR 두께의 기울기로 감광성을 평가합니다.</p>
                     <ul>
-                      <li><span class="code-badge">\\gamma = \\frac{1}{\\log_{10}(D_{100} / D_0)}</span> : Contrast $\\gamma$ 값이 클수록(기울기가 가파를수록) 빛의 회절 번짐에 영향을 받지 않고 수직에 가까운 선명한 벽면을 형성합니다.</li>
-                      <li><strong>문턱 광량 ($D_{100}$, $E_{\\text{th}}$)</strong>: 노광된 PR이 바닥까지 100% 완벽하게 녹아 없어지는 데 필요한 최소 에너지입니다.</li>
+                      <li><span class="code-badge">γ = 1 / log₁₀(D₁₀₀ / D₀)</span> : Contrast γ 값이 클수록(기울기가 가파를수록) 빛의 회절 번짐에 영향을 받지 않고 수직에 가까운 선명한 벽면을 형성합니다.</li>
+                      <li><strong>문턱 광량 (D₁₀₀, Eth)</strong>: 노광된 PR이 바닥까지 100% 완벽하게 녹아 없어지는 데 필요한 최소 에너지입니다.</li>
                       <li><strong>잔막율</strong>: 비노광부가 현상액에 불필요하게 깎여 나가지 않고 남아있는 비율입니다.</li>
                     </ul>
                   </div>
@@ -992,7 +984,7 @@
                     <h3>📐 단면 프로파일에 따른 후속 공정 매칭 (L02 p.44, 58)</h3>
                     <ul>
                       <li><strong>사다리꼴 (Over-cut) 프로파일</strong>:
-                        상단에서 빛이 흡수되어 위가 더 많이 깎이는 형태입니다. 측벽 보호막 형성이 유리하여 <strong>건식 식각(Dry Etching) 마스크</strong>로 표준 사용됩니다.</li>
+                        상단에서 빛이 흡수되어 위가 더 많이 깎이는 형태입니다. 측벽 보호막 형성이 유리하여 <strong>건식 식각(Dry Etch) 마스크</strong>로 표준 사용됩니다.</li>
                       <li><strong>역사다리꼴 (Under-cut) 프로파일</strong>:
                         상단보다 바닥의 폭이 좁은 역테이퍼 형상입니다. 주로 Negative PR을 사용하며, 금속을 전면 증착한 후 PR을 유기용매로 녹여 떼어내는 <strong>Lift-off 공정</strong>에 필수적입니다. (금속 막질이 연속되지 않고 끊어져 깨끗이 분리됨)</li>
                     </ul>
@@ -1023,7 +1015,7 @@
                     <p>플라즈마에서 생성된 반응성 라디칼의 화학 반응과 직진 가속된 이온의 물리적 충돌을 결합한 이방성 가공 기술입니다.</p>
                     <ul>
                       <li><strong>선택비 (Selectivity)</strong>: 가공하려는 하부 막질과 마스크 간의 식각 속도 비입니다. 화학적 가스 비율을 조절하여 선택비를 극대화합니다.</li>
-                      <li><strong>애싱 (Ashing)</strong>: 식각 완료 후 고착된 PR 마스크를 산소 플라즈마($\\text{O}_2$)로 태워 $\\text{CO}, \\text{CO}_2$ 기체로 기화 배출시킵니다.</li>
+                      <li><strong>애싱 (Ashing)</strong>: 식각 완료 후 고착된 PR 마스크를 산소 플라즈마(O₂)로 태워 CO, CO₂ 기체로 기화 배출시킵니다.</li>
                     </ul>
                   </div>
                 `,
@@ -1049,8 +1041,8 @@
                   <div class="theory-section">
                     <h3>🔬 박막 증착 방식 3대 기술 비교</h3>
                     <ul>
-                      <li><strong>PVD (물리기상증착)</strong>: 진공 챔버에서 $\\text{Ar}^+$ 이온으로 금속 타깃을 때려 튀어나온 원자를 입히는 스퍼터링 방식입니다. 순도가 높으나 바닥 위주로 증착되어 단차 도포성이 불량합니다.</li>
-                      <li><strong>CVD (화학기상증착)</strong>: 전구체 기체들이 표면 화학 반응하여 고체 박막을 합성합니다. 굴곡진 벽면에도 균일하게 막이 쌓이는 우수한 단차 도포성($\\text{Step Coverage}$)을 갖습니다.</li>
+                      <li><strong>PVD (물리기상증착)</strong>: 진공 챔버에서 Ar⁺ 이온으로 금속 타깃을 때려 튀어나온 원자를 입히는 스퍼터링 방식입니다. 순도가 높으나 바닥 위주로 증착되어 단차 도포성이 불량합니다.</li>
+                      <li><strong>CVD (화학기상증착)</strong>: 전구체 기체들이 표면 화학 반응하여 고체 박막을 합성합니다. 굴곡진 벽면에도 균일하게 막이 쌓이는 우수한 단차 도포성(Step Coverage)을 갖습니다.</li>
                       <li><strong>ALD (원자층증착)</strong>: 기체 전구체를 1종씩 번갈아 주입하여 자기제한반응으로 원자 1개 층씩 쌓아 올립니다. 100%에 가까운 완벽한 도포성과 나노 두께 제어를 자랑합니다.</li>
                     </ul>
                   </div>
@@ -1078,7 +1070,7 @@
                     <h3>⚡ 구리 배선 형성을 위한 다마신 공법</h3>
                     <p>구리(Cu)는 알루미늄보다 비저항이 낮고 전자이동(EM) 내성이 우수하지만, 휘발성 부산물이 생기지 않아 건식 식각이 불가능합니다.</p>
                     <ul>
-                      <li><strong>공정 순서</strong>: 층간 절연막(ILD) 증착 $\\rightarrow$ 트렌치 홈 가공 $\\rightarrow$ 확산 방지용 TiN/TaN 배리어 메탈 증착 $\\rightarrow$ 구리 전기도금 매립 $\\rightarrow$ <strong>CMP로 표면 연마 평탄화</strong>.</li>
+                      <li><strong>공정 순서</strong>: 층간 절연막(ILD) 증착 → 트렌치 홈 가공 → 확산 방지용 TiN/TaN 배리어 메탈 증착 → 구리 전기도금 매립 → <strong>CMP로 표면 연마 평탄화</strong>.</li>
                       <li><strong>Dual-Damascene</strong>: 비아 홀과 배선 트렌치를 동시에 가공하고 한 번에 구리를 채워 넣어 공정을 단축합니다.</li>
                     </ul>
                   </div>
@@ -1188,7 +1180,7 @@
     let currentItem = null;
 
     // =========================================================================
-    // 3. UI 렌더링 & KaTeX 자동 수식 렌더러
+    // 3. UI 렌더링
     // =========================================================================
     function buildTree() {
       const container = document.getElementById("accordionNav");
@@ -1242,37 +1234,6 @@
       }
     }
 
-    // 텍스트/수식 정리 및 렌더링 함수
-    function cleanAndRenderMath(element) {
-      if (window.renderMathInElement) {
-        try {
-          renderMathInElement(element, {
-            delimiters: [
-              { left: "$$", right: "$$", display: true },
-              { left: "$", right: "$", display: false }
-            ],
-            throwOnError: false
-          });
-          return;
-        } catch (e) {
-          console.warn("KaTeX error, fallback to regex replace:", e);
-        }
-      }
-      
-      // KaTeX 로드 실패 시 가독성 높은 텍스트로 폴백 변환
-      let html = element.innerHTML;
-      html = html.replace(/\$\\text\{([^}]+)\}\$/g, '$1')                  .replace(/\$([^$]+)\$/g, '$1')                  .replace(/\\text\{([^}]+)\}/g, '$1')
-                 .replace(/\\approx/g, '≈')
-                 .replace(/\\propto/g, '∝')
-                 .replace(/\\cdot/g, '·')
-                 .replace(/\\rightarrow/g, '→')
-                 .replace(/\\lambda/g, 'λ')
-                 .replace(/\\theta/g, 'θ')
-                 .replace(/\\tau/g, 'τ')
-                 .replace(/\\gamma/g, 'γ');
-      element.innerHTML = html;
-    }
-
     function selectNode(item, subTitle, sectionName) {
       currentItem = item;
       document.querySelectorAll(".item-btn").forEach(b => b.classList.remove("active"));
@@ -1310,10 +1271,6 @@
       document.getElementById("quizQuestion").innerText = "Q. " + item.quiz.q;
       document.getElementById("quizAnswer").innerText = "💡 정답: " + item.quiz.a;
       document.getElementById("quizAnswer").style.display = "none";
-
-      // 수식 자동 변환
-      cleanAndRenderMath(descEl);
-      cleanAndRenderMath(paramContainer);
 
       // 필기 노트 불러오기
       const savedNote = localStorage.getItem(`note_${item.id}`);
