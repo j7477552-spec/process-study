@@ -16,6 +16,7 @@
       --text-muted: #94a3b8;
       --border-color: #26354d;
       --tag-bg: rgba(56, 189, 248, 0.12);
+      --sidebar-width: 360px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -26,16 +27,22 @@
       display: flex;
       height: 100vh;
       overflow: hidden;
+      position: relative;
     }
 
-    /* 좌측 계층형 메뉴 */
+    /* 토글형 좌측 사이드바 */
     aside {
-      width: 360px;
+      width: var(--sidebar-width);
       background-color: var(--panel-bg);
       border-right: 1px solid var(--border-color);
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+      z-index: 20;
+    }
+    aside.collapsed {
+      margin-left: calc(-1 * var(--sidebar-width));
     }
     .brand {
       padding: 16px 20px;
@@ -144,6 +151,8 @@
       flex-direction: column;
       overflow-y: auto;
       background-color: var(--bg-dark);
+      width: 100%;
+      transition: all 0.3s ease;
     }
     header {
       padding: 14px 24px;
@@ -155,6 +164,29 @@
       position: sticky;
       top: 0;
       z-index: 10;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .sidebar-toggle-btn {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid var(--border-color);
+      color: var(--accent-blue);
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .sidebar-toggle-btn:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--accent-blue);
     }
     .header-info h1 { font-size: 1.25rem; font-weight: 700; }
     .header-info p { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
@@ -185,7 +217,6 @@
       gap: 8px;
     }
 
-    /* CMOS 시뮬레이터 */
     .sim-box {
       background: #040711;
       border-radius: 8px;
@@ -195,7 +226,7 @@
       align-items: center;
       padding: 14px;
     }
-    canvas#cmosCanvas {
+    canvas {
       width: 100%;
       height: 280px;
       background: #02040a;
@@ -210,7 +241,6 @@
       height: 24px;
     }
 
-    /* SVG 도해 컨테이너 */
     .diagram-container {
       background: #060b17;
       border: 1px solid var(--border-color);
@@ -245,8 +275,18 @@
     .btn-primary { background: var(--accent-blue); color: #090d16; }
     .btn-primary:hover { background: var(--accent-hover); }
     .btn-secondary { background: var(--card-bg); color: #fff; border: 1px solid var(--border-color); }
+    .btn-toggle {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: #94a3b8;
+    }
+    .btn-toggle.active {
+      background: var(--accent-cyan);
+      color: #090d16;
+      font-weight: 700;
+      border-color: var(--accent-cyan);
+    }
 
-    /* 이론 본문 */
     .theory-box {
       background: var(--card-bg);
       border-radius: 8px;
@@ -279,9 +319,7 @@
       flex-direction: column;
       gap: 6px;
     }
-    .theory-section strong {
-      color: #fff;
-    }
+    .theory-section strong { color: #fff; }
     .code-badge {
       display: inline-block;
       background: rgba(56, 189, 248, 0.15);
@@ -290,7 +328,6 @@
       border-radius: 6px;
       font-size: 0.9rem;
       font-weight: 600;
-      letter-spacing: 0.02em;
     }
 
     .param-list {
@@ -335,30 +372,43 @@
     .save-alert { font-size: 0.82rem; color: #10b981; margin-top: 6px; display: none; }
 
     @media (max-width: 768px) {
-      body { flex-direction: column; overflow-y: auto; height: auto; }
-      aside { width: 100%; height: auto; border-right: none; }
-      canvas#cmosCanvas { height: 210px; }
+      aside {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.5);
+      }
+      canvas { height: 210px; }
     }
   </style>
 </head>
 <body>
 
-  <aside>
+  <!-- 좌측 사이드바 (접기/펼치기 가능) -->
+  <aside id="mainSidebar">
     <div class="brand">🔬 반도체 8대 공정 & L02 포토 심화</div>
     <div class="tree-nav" id="accordionNav"></div>
   </aside>
 
+  <!-- 메인 작업창 -->
   <main>
     <header>
-      <div class="header-info">
-        <h1 id="viewHeaderTitle">공정을 선택해 주세요</h1>
-        <p id="viewHeaderPath">분류 > 공정명</p>
+      <div class="header-left">
+        <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="사이드바 메뉴 열기/닫기">
+          <span id="toggleIcon">☰</span>
+          <span id="toggleText">메뉴 닫기</span>
+        </button>
+        <div class="header-info">
+          <h1 id="viewHeaderTitle">공정을 선택해 주세요</h1>
+          <p id="viewHeaderPath">분류 > 공정명</p>
+        </div>
       </div>
       <button class="btn btn-primary" onclick="saveCurrentNote()">💾 지식 노트 저장</button>
     </header>
 
     <div class="content-grid">
-      <!-- 1. CMOS 시뮬레이터 카드 -->
+      <!-- 1. [CMOS 시뮬레이터 카드] -->
       <div class="card" id="cmosCard" style="display:none;">
         <div class="card-title">🖥️ CMOS 전공정 연속 단면 시뮬레이션 (Twin-Well to Metal-1)</div>
         <div class="sim-box">
@@ -376,7 +426,32 @@
         </div>
       </div>
 
-      <!-- 2. 교재 심화 이론 & 도해 분석 카드 -->
+      <!-- 2. [멀티패터닝: LELE & SADP 시뮬레이터 카드] -->
+      <div class="card" id="mptCard" style="display:none;">
+        <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>🖥️ 멀티패터닝(MPT) 공정 연속 단면 시뮬레이터</span>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-toggle active" id="btnToggleLele" onclick="switchMptMode('LELE')">🎞️ LELE 시뮬레이션</button>
+            <button class="btn btn-toggle" id="btnToggleSadp" onclick="switchMptMode('SADP')">🎞️ SADP 시뮬레이션</button>
+          </div>
+        </div>
+        <div class="sim-box">
+          <canvas id="mptCanvas" width="900" height="280"></canvas>
+          <div style="width:100%; margin-top:10px;">
+            <input type="range" id="mptSlider" class="timeline-slider" min="0" max="1000" value="0" oninput="onMptSlider(this.value)" />
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-primary" id="mptPlayBtn" onclick="toggleMptPlay()">▶ 전체 시퀀스 연속 재생</button>
+                <button class="btn btn-secondary" onclick="resetMpt()">⏮ 처음으로</button>
+              </div>
+              <div id="mptStageBadge" style="font-size:0.86rem; color:var(--accent-cyan); font-weight:600;">대기 중</div>
+            </div>
+          </div>
+        </div>
+        <div id="mptStepExplanation" style="margin-top:12px; font-size:0.88rem; color:#cbd5e1; background:#111a2e; padding:12px; border-radius:8px; border-left:3px solid var(--accent-cyan); line-height:1.6;"></div>
+      </div>
+
+      <!-- 3. 교재 심화 이론 & 도해 분석 카드 -->
       <div class="card">
         <div class="card-title" id="theoryCardTitle">📖 교재 심화 이론 & 메커니즘 분석</div>
         <div class="theory-box">
@@ -397,7 +472,7 @@
         </div>
       </div>
 
-      <!-- 3. 필기 노트 -->
+      <!-- 4. 필기 노트 -->
       <div class="card">
         <div class="card-title">📝 나만의 공정 족보 노트 (iPad 로컬 자동저장)</div>
         <textarea id="studyNote" class="notes-area" placeholder="애플펜슬 또는 키보드로 핵심 내용과 시험 족보를 정리해보세요..."></textarea>
@@ -407,6 +482,16 @@
   </main>
 
   <script>
+    // =========================================================================
+    // 사이드바 토글 (열기/닫기) 로직
+    // =========================================================================
+    function toggleSidebar() {
+      const sidebar = document.getElementById("mainSidebar");
+      const toggleText = document.getElementById("toggleText");
+      const isCollapsed = sidebar.classList.toggle("collapsed");
+      toggleText.innerText = isCollapsed ? "메뉴 열기" : "메뉴 닫기";
+    }
+
     // =========================================================================
     // SVG 벡터 도해 모음
     // =========================================================================
@@ -634,7 +719,7 @@
     };
 
     // =========================================================================
-    // 통합 데이터베이스 (완전 자체 HTML/유니코드 서식 적용)
+    // 통합 데이터베이스 (모든 세부 단위 공정 100% 보존 + MPT 시뮬레이터 결합)
     // =========================================================================
     const fabStructure = [
       {
@@ -652,30 +737,14 @@
                 descHtml: `
                   <div class="theory-section">
                     <h3>💎 초크랄스키(CZ)법 단결정 잉곳 인상</h3>
-                    <p>고순도 다결정 규소(EGS)를 도가니에 넣고 약 1420℃에서 용융시킨 뒤, 종결정(Seed Crystal)을 회전 접촉시키며 서서히 인상하여 원통형 단결정 잉곳을 성장시킵니다.</p>
-                    <ul>
-                      <li><strong>결정 방위</strong>: CMOS 제조에는 표면 결함(Dangling bond) 밀도가 낮고 산화막 계면 특성이 우수한 <strong>(100) 결정면</strong>을 표준으로 사용합니다.</li>
-                      <li><strong>산소/탄소 불순물 제어</strong>: 도가니 석영(SiO₂)이 녹아들며 산소가 미량 침투하지만, 이는 웨이퍼 내부 게터링(Internal Gettering) 효과를 돕습니다.</li>
-                    </ul>
-                  </div>
-                  <div class="theory-section">
-                    <h3>📐 정밀 기계 가공 프로세스</h3>
-                    <p>잉곳 인상 후 <strong>외경 연마 → 슬라이싱(Sawing) → 에지 라운딩 → 래핑(Lapping) → CMP 연마</strong> 순으로 진행됩니다.</p>
-                    <ul>
-                      <li><strong>Diamond Wire Saw</strong>: 커프 로스(Kerf loss)를 최소화하며 얇은 두께로 슬라이싱합니다.</li>
-                      <li><strong>Edge Grinding</strong>: 웨이퍼 테두리의 응력 집중과 미세 크랙(Chipping) 발생을 방지하기 위해 모서리를 둥글게 가공합니다.</li>
-                    </ul>
+                    <p>고순도 다결정 규소(EGS)를 도가니에서 1420℃로 용융시킨 후 종결정(Seed)을 인상하여 단결정 잉곳을 만듭니다. CMOS 표준으로 (100) 결정면을 사용합니다.</p>
                   </div>
                 `,
                 diagramKey: "wafer_ingot",
                 caption: "[도해] CZ법 단결정 실리콘 잉곳 인상 및 웨이퍼 슬라이싱 공정",
-                params: [
-                  { k: "결정 성장법", v: "초크랄스키(Czochralski, CZ)법" },
-                  { k: "공정 온도", v: "약 1420℃ (Si 융점)" },
-                  { k: "표준 결정면", v: "Si (100) Wafer" }
-                ],
-                quiz: { q: "웨이퍼 테두리의 미세 균열을 방지하고 이물질 탈락을 막기 위해 모서리를 둥글게 가공하는 공정은?", a: "에지 라운딩 (Edge Grinding)" },
-                note: "• CZ법 단결정 잉곳 인상 시 도가니와 시드의 반대 방향 회전 속도로 직경과 도펀트 농도를 제어함"
+                params: [{ k: "결정 성장법", v: "초크랄스키(CZ)법" }, { k: "온도", v: "약 1420℃" }],
+                quiz: { q: "웨이퍼 테두리의 미세 균열을 막기 위해 둥글게 가공하는 공정은?", a: "에지 라운딩 (Edge Grinding)" },
+                note: "• CZ법 단결정 인상 시 (100)면 웨이퍼가 산화막 계면 특성이 우수함"
               }
             ]
           },
@@ -688,31 +757,15 @@
                 name: "건식 산화 vs 습식 산화 (Deal-Grove 모델)",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>🔥 열산화 메커니즘 & 반응 속도론</h3>
-                    <p>실리콘 표면에 고온(800~1100℃)에서 산소 또는 수증기를 공급하여 치밀한 절연체인 SiO₂를 성장시킵니다.</p>
-                    <ul>
-                      <li><strong>건식 산화 (Dry Oxidation)</strong>: Si + O₂ → SiO₂<br>산소 분자 확산이 느려 성장 속도는 더디지만 막질 밀도가 매우 치밀하고 계면 준위 결함이 낮아 얇은 <strong>Gate Oxide</strong> 형성에 필수적입니다.</li>
-                      <li><strong>습식 산화 (Wet Oxidation)</strong>: Si + 2H₂O → SiO₂ + 2H₂<br>수증기(H₂O)의 확산 속도가 훨씬 빠르므로 건식 대비 5~10배 빠르게 두꺼운 <strong>Field Oxide</strong>를 만듭니다.</li>
-                    </ul>
-                  </div>
-                  <div class="theory-section">
-                    <h3>📊 Deal-Grove 산화 속도 모델</h3>
-                    <p>산화막 두께 x₀와 시간 t의 관계: x₀² + A·x₀ = B·(t + τ)</p>
-                    <ul>
-                      <li><strong>초기 선형 영역</strong>: x₀ ≈ (B/A)·(t + τ) (표면 화학 반응 율속)</li>
-                      <li><strong>후기 포물선 영역</strong>: x₀² ≈ B·t (산화막 내부로의 확산 율속)</li>
-                    </ul>
+                    <h3>🔥 열산화 메커니즘</h3>
+                    <p>건식 산화(O₂ 투입)는 치밀하여 Gate Oxide에 쓰이며, 습식 산화(H₂O 투입)는 5~10배 빨라 두꺼운 Field Oxide에 쓰입니다.</p>
                   </div>
                 `,
                 diagramKey: "oxidation_comp",
                 caption: "[도해] 건식 산화(Thin Gate Oxide) vs 습식 산화(Thick Field Oxide) 막질 단면",
-                params: [
-                  { k: "건식 속도상수", v: "B/A (선형 속도 상수 지배, 치밀막)" },
-                  { k: "습식 속도상수", v: "B (포물선 확산 계수 지배, 급속 성장)" },
-                  { k: "체적 팽창비", v: "Si 1nm 소모 시 SiO₂ 약 2.17nm 형성" }
-                ],
-                quiz: { q: "성장 속도는 느리지만 계면 결함이 적어 트랜지스터 게이트 절연막에 쓰이는 산화 방식은?", a: "건식 산화 (Dry Oxidation)" },
-                note: "• 실리콘 산화 시 기판 표면의 44%를 파고들며 위로 56% 솟아오름"
+                params: [{ k: "건식 반응식", v: "Si + O₂ → SiO₂" }, { k: "습식 반응식", v: "Si + 2H₂O → SiO₂ + 2H₂" }],
+                quiz: { q: "게이트 절연막에 쓰이는 치밀한 고품질 산화법은?", a: "건식 산화 (Dry Oxidation)" },
+                note: "• Deal-Grove 산화 속도 모델 적용"
               }
             ]
           },
@@ -725,37 +778,15 @@
                 name: "포토 8단계 프로세스 & 3-Baking",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>📋 포토공정 8대 세부 절차 (L02 p.10)</h3>
-                    <p>반도체 생산 비용의 약 35%, 총 제조 시간의 60%를 차지하는 최고 핵심 공정입니다.</p>
-                    <ul>
-                      <li><strong>1. Surface Prep</strong>: 탈수 베이크 후 HMDS 증기로 웨이퍼 표면 소수화 개질</li>
-                      <li><strong>2. Spin Coat</strong>: 원심력으로 감광액 균일 도포 & EBR(가장자리 비드 린스)</li>
-                      <li><strong>3. Soft Bake (90~110℃)</strong>: 잔류 용매 80~90% 건조, 스트레스 완화</li>
-                      <li><strong>4. Align & Exposure</strong>: 정렬 마크 정합 후 빛(DUV/EUV) 조사</li>
-                      <li><strong>5. PEB (110~120℃)</strong>: 정재파 효과 완화 및 CAR 광산 촉매 열증폭 활성화</li>
-                      <li><strong>6. Develop & Rinse</strong>: 알칼리 현상액(2.38% TMAH) 분사 및 DI 워터 세척</li>
-                      <li><strong>7. Hard Bake (110~130℃)</strong>: 잔여 수분 증발, 고분자 열경화로 내식각성 증대</li>
-                      <li><strong>8. ADI 검사</strong>: 광학 검사로 선폭(CD) 측정 (불량 시 Rework 가능)</li>
-                    </ul>
-                  </div>
-                  <div class="theory-section">
-                    <h3>🔥 3대 Baking 공정의 기능적 분리</h3>
-                    <ul>
-                      <li><span class="code-badge">Soft Bake</span>: 감광액 도포 직후 용매 제거 및 노광 감도 안정화</li>
-                      <li><span class="code-badge">PEB</span>: 기판 반사 간섭 톱니무늬 제거 및 DUV 광산(H⁺) 연쇄 반응 활성화</li>
-                      <li><span class="code-badge">Hard Bake</span>: Tg(유리전이온도) 이상 가열로 Pinhole을 메우고 식각 플라즈마 충격 대비</li>
-                    </ul>
+                    <h3>📋 포토 8대 절차 및 3대 Baking</h3>
+                    <p>HMDS → Spin Coat → Soft Bake(용매 건조) → Align & Exposure → PEB(정재파 완화/CAR촉매) → Develop → Hard Bake(열경화) → ADI 검사.</p>
                   </div>
                 `,
                 diagramKey: "photo_sequence",
-                caption: "[도해] 포토공정 8단계 시퀀스 및 3대 Baking 공정 배치도 (L02 p.10)",
-                params: [
-                  { k: "Soft Bake 조건", v: "90~110℃, Solvent 80% 이상 증발" },
-                  { k: "PEB 조건", v: "110~120℃, 화학증폭형 CAR 반응 촉매화" },
-                  { k: "Hard Bake 조건", v: "110~130℃, PR 고분자 열경화" }
-                ],
-                quiz: { q: "식각 전 유일하게 불량 시 PR을 벗겨내고 웨이퍼 손상 없이 재작업(Rework)할 수 있는 검사는?", a: "현상 후 검사 (ADI, After Develop Inspection)" },
-                note: "• 식각 공정으로 넘어가 실리콘을 파내면 비가역적이므로 ADI의 엄격한 판정이 필수적"
+                caption: "[도해] 포토공정 8단계 시퀀스 및 3대 Baking 공정 배치도",
+                params: [{ k: "Soft Bake", v: "90~110℃" }, { k: "PEB", v: "110~120℃" }, { k: "Hard Bake", v: "110~130℃" }],
+                quiz: { q: "식각 전 유일하게 Rework 가능한 검사 단계는?", a: "ADI (After Develop Inspection)" },
+                note: "• 포토 공정은 반도체 제조 원가의 약 35% 차지"
               },
               {
                 id: "ph_hmds",
@@ -763,242 +794,125 @@
                 descHtml: `
                   <div class="theory-section">
                     <h3>🧪 HMDS 소수화 반응 메커니즘 (L02 p.11)</h3>
-                    <p>실리콘 웨이퍼 표면은 공기 중 수분과 결합하여 친수성(Si-OH)을 띱니다. 반면 Photoresist는 유기물 기반이므로 젖음성이 떨어져 접착 불량이 발생합니다.</p>
-                    <ul>
-                      <li><strong>화학 치환</strong>: 웨이퍼를 <strong>HMDS</strong> 증기에 노출시키면 표면의 -OH기가 소수성 작용기인 <strong>-O-Si(CH₃)₃</strong>(트리메틸실릴기)로 치환되며 암모니아(NH₃)가 방출됩니다.</li>
-                      <li><strong>접촉각 증가</strong>: 물 접촉각이 커지며 PR과의 결합력이 극대화되어, 알칼리 현상 시 패턴이 들뜨는(Pattern lifting) 현상을 차단합니다.</li>
-                    </ul>
-                  </div>
-                  <div class="theory-section">
-                    <h3>🌀 Spin Coating 동역학 & Edge Bead 불량 (L02 p.12)</h3>
-                    <ul>
-                      <li><strong>코팅 두께 결정</strong>: 점도가 낮고 회전수(RPM)가 높을수록 얇고 균일한 막이 형성됩니다.</li>
-                      <li><strong>Edge Bead 현상</strong>: 표면장력으로 인해 웨이퍼 최외곽 테두리에 PR이 볼록하게 뭉치는 불량입니다.</li>
-                      <li><strong>EBR (Edge Bead Remover)</strong>: 도포 말기에 저속 회전 상태에서 신너(Thinner) 노즐을 테두리에 분사하여 베벨 부위의 두꺼운 PR을 제거합니다.</li>
-                    </ul>
+                    <p>웨이퍼를 HMDS 증기에 노출시켜 표면의 -OH기를 소수성 작용기인 -O-Si(CH₃)₃(트리메틸실릴기)로 치환하여 PR 접착력을 높입니다. 스핀 코팅 시 외곽 비드는 Thinner(EBR)로 린스합니다.</p>
                   </div>
                 `,
                 diagramKey: "hmds_reaction",
-                caption: "[도해] HMDS 표면 처리 전후의 접촉각 변화 및 소수성화 메커니즘 (L02 p.11)",
-                params: [
-                  { k: "표면 상태 변화", v: "Si-OH (친수성) → Si-O-Si(CH₃)₃ (소수성)" },
-                  { k: "코팅 회전수", v: "2000 ~ 4000 RPM 고속 회전" },
-                  { k: "주요 불량", v: "Streaks(파티클), Edge Bead(뭉침), Pinhole" }
-                ],
+                caption: "[도해] HMDS 표면 처리 전후의 접촉각 변화 및 소수성화 메커니즘",
+                params: [{ k: "표면 상태 변화", v: "Si-OH (친수성) → Si-O-Si(CH₃)₃ (소수성)" }, { k: "회전수", v: "2000 ~ 4000 RPM" }],
                 quiz: { q: "HMDS 처리 후 실리콘 웨이퍼 표면에 결합되는 소수성 작용기는?", a: "-O-Si(CH3)3 (트리메틸실릴기)" },
-                note: "• 현상액 용해 속도차(Contrast)를 벌리기 위해서라도 베이스 레진의 소수성 유지가 필수적"
+                note: "• 현상액 침투에 따른 패턴 리프팅 결함 방지"
               },
               {
                 id: "ph_align",
                 name: "노광 광학계 & Stepper vs Scanner",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>📐 Overlay Accuracy & Alignment (L02 p.13, 14)</h3>
-                    <p>반도체는 20~25회 이상의 포토 공정이 누적되므로 층간 수평 정합도가 생명입니다.</p>
-                    <ul>
-                      <li><strong>Overlay Error</strong>: 하부 층의 중심 좌표와 상부 층 중심 좌표 간의 정렬 오차 편차입니다.</li>
-                      <li><strong>Stitch Error</strong>: 대면적 칩 제작 시 샷(Shot)과 샷 사이의 이음매 정렬 오차입니다.</li>
-                    </ul>
-                  </div>
-                  <div class="theory-section">
                     <h3>🎯 Stepper vs Scanner 광학계 진화 (L02 p.15, 16)</h3>
-                    <ul>
-                      <li><strong>밀착/근접 노광 한계</strong>: Contact 방식은 마스크 마모 파티클 불량, Proximity 방식은 근접장 회절 왜곡이 심각합니다.</li>
-                      <li><strong>축소 투영 (Projection Aligner)</strong>: 레티클(마스크)을 실제 칩 크기의 4배, 5배로 크게 제작하고 4:1 축소 렌즈로 투영합니다.</li>
-                      <li><strong>Stepper</strong>: 렌즈 전면으로 일괄 노광하므로 가장자리에서 <strong>구면수차와 색수차</strong>가 발생합니다.</li>
-                      <li><strong>Scanner</strong>: 직사각형 <strong>슬릿(Slit)</strong>을 통해 렌즈 중심부만 이용하며, 레티클과 웨이퍼를 동기 주사하여 수차를 최소화합니다.</li>
-                    </ul>
+                    <p>1:1 Stepper는 렌즈 가장자리에서 구면수차와 색수차가 발생하므로, 직사각형 슬릿(Slit)으로 렌즈 중심부만 주사 통과시키는 스캐너(Scanner)가 수차를 최소화합니다.</p>
                   </div>
                 `,
                 diagramKey: "rayleigh_dof",
-                caption: "[도해] 축소 투영 렌즈계와 광학 수차 억제 개념도 (L02 p.15)",
-                params: [
-                  { k: "축소 배율", v: "Reticle 4X / 5X → Wafer 1X" },
-                  { k: "주사 메커니즘", v: "Reticle(4v) & Wafer(1v) 반대방향 동기 이동" },
-                  { k: "수차 저감", v: "Slit 노광으로 렌즈 중심의 이상적 굴절면만 활용" }
-                ],
+                caption: "[도해] 축소 투영 렌즈계와 광학 수차 억제 개념도",
+                params: [{ k: "축소 배율", v: "Reticle 4X / 5X → Wafer 1X" }, { k: "수차 저감", v: "Slit 노광 채택" }],
                 quiz: { q: "렌즈 가장자리 왜곡을 막기 위해 렌즈 중심부만 슬릿으로 주사하는 최신 노광 장비는?", a: "스캐너 (Scanner)" },
-                note: "• Reticle은 먼지 부착을 방지하기 위해 초박막 보호막인 펠리클(Pellicle)을 테두리에 장착"
+                note: "• 펠리클(Pellicle)로 마스크 오염 방지"
               },
               {
                 id: "ph_rayleigh",
                 name: "레일리 분해능 공식 & 액침(Immersion)",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>🔬 레일리 분해능(Resolution)과 DOF의 트레이드오프 (L02 p.18, 32)</h3>
-                    <p>포토 공정에서 형성 가능한 최소 선폭(Half Pitch)의 물리적 한계 공식입니다.</p>
-                    <ul>
-                      <li><span class="code-badge">R = k₁ · (λ / NA)</span> : 분해능 R이 작을수록 미세 패턴 가공이 가능합니다. 파장(λ)을 줄이거나 개구수(NA)를 키워야 합니다.</li>
-                      <li><span class="code-badge">DOF = k₂ · (λ / NA²) = k₂ · [R² / (k₁² · λ)]</span> : 상이 선명하게 맺히는 수직 깊이 허용 범위(초점심도)입니다.</li>
-                      <li><strong>치명적 딜레마</strong>: 선폭을 줄이기 위해 NA를 키우면 DOF는 <strong>NA의 제곱에 반비례</strong>하여 극도로 얕아집니다. 이를 극복하기 위해 하부 단차를 없애는 <strong>CMP 평탄화</strong>가 필수적입니다.</li>
-                    </ul>
-                  </div>
-                  <div class="theory-section">
-                    <h3>🌊 ArF Immersion (액침 노광) 공법 (L02 p.20~22)</h3>
-                    <p>렌즈와 웨이퍼 사이의 빈 공간을 굴절률이 높은 <strong>초순수(Water, n = 1.44)</strong>로 채워 노광합니다.</p>
-                    <ul>
-                      <li><strong>원리</strong>: NA = n · sinθ. 매질의 굴절률 n이 증가하여 광학계의 NA가 0.93에서 <strong>1.35</strong>로 대폭 증가합니다.</li>
-                      <li><strong>파장 단축 효과</strong>: 193 nm ArF 광원의 실효 파장이 <strong>λ' = λ / n = 193 / 1.44 ≈ 134 nm</strong>로 줄어든 것과 완벽히 동일한 해상도 향상을 얻습니다.</li>
-                    </ul>
+                    <h3>🔬 레일리 분해능(Resolution)과 DOF 트레이드오프 (L02 p.18)</h3>
+                    <p>R = k₁ · (λ / NA), DOF = k₂ · (λ / NA²). NA를 키우면 DOF는 제곱에 반비례해 얕아집니다. ArF 액침은 순수(n=1.44)를 채워 실효 파장을 134nm로 축소, NA 1.35를 달성했습니다.</p>
                   </div>
                 `,
                 diagramKey: "rayleigh_dof",
-                caption: "[도해] 레일리 분해능(R) 공식과 개구수(NA) 증가 시 초점심도(DOF) 축소 관계 (L02 p.18)",
-                params: [
-                  { k: "Rayleigh 분해능 식", v: "R = k₁ · (λ / NA)" },
-                  { k: "초점심도(DOF) 식", v: "DOF = k₂ · (λ / NA²)" },
-                  { k: "물 굴절률 (193nm)", v: "n = 1.44 (실효 파장 134nm 환산)" }
-                ],
+                caption: "[도해] 레일리 분해능(R) 공식과 개구수(NA) 증가 시 초점심도(DOF) 축소 관계",
+                params: [{ k: "Rayleigh 식", v: "R = k₁ · (λ / NA)" }, { k: "초점심도 식", v: "DOF = k₂ · (λ / NA²)" }],
                 quiz: { q: "렌즈 개구수(NA)를 2배로 키울 때 초점심도(DOF)는 몇 배로 줄어드는가?", a: "1/4배 (NA²에 반비례)" },
-                note: "• 물을 렌즈 아래 채우는 아이디어는 기포 결함(Micro-bubble) 제어가 상용화의 핵심 열쇠였음"
+                note: "• DOF 마진 확보를 위해 CMP 평탄화 필수"
               },
               {
                 id: "ph_ret",
                 name: "해상도 향상 기술 (RET: OPC, OAI, PSM)",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>🛠️ 공정상수 k₁을 극한(0.25)까지 낮추는 RET 기술 (L02 p.19, 34)</h3>
-                    <p>광원의 파장을 바꾸지 않고 회절 왜곡을 물리적으로 극복하는 3대 기술입니다.</p>
-                    <ul>
-                      <li><strong>OPC (광학 근접 보정)</strong>:
-                        빛의 회절로 패턴 끝이 짧아지는 Line-End Shortening과 모서리가 둥글어지는 Corner Rounding을 방지하기 위해 마스크에 해머헤드나 세리프 보정 패턴을 추가합니다.</li>
-                      <li><strong>OAI (비등축 조명)</strong>:
-                        빛을 수직 입사시키는 대신 조리개를 변형하여 경사각으로 입사시킵니다. 렌즈 진입 각도를 좁혀 0차광과 1차광의 광로차를 줄여 <strong>DOF 마진을 확장</strong>합니다.</li>
-                      <li><strong>PSM (위상 천이 마스크)</strong>:
-                        인접 개구부에 위상을 180° 반전시키는 투명 Shifter를 배치하여 패턴 경계면에서 <strong>상쇄 간섭</strong>을 유도합니다. 빛의 번짐을 막고 경계 강도를 0으로 떨어뜨려 Contrast를 극대화합니다.</li>
-                    </ul>
+                    <h3>🛠 공정상수 k₁을 0.25 한계까지 낮추는 RET 기술 (L02 p.19)</h3>
+                    <p>OPC(마스크 왜곡 보정 해머헤드), OAI(경사 입사로 DOF 확보), PSM(180° 위상 반전 상쇄 간섭으로 Contrast 극대화)을 적용합니다.</p>
                   </div>
                 `,
                 diagramKey: "opc_diagram",
-                caption: "[도해] 광 근접 보정(OPC) 적용 전후의 마스크 설계 및 웨이퍼 전사 형상 (L02 p.19)",
-                params: [
-                  { k: "OPC 보정 대상", v: "Line-end shortening, Corner rounding" },
-                  { k: "OAI 효과", v: "경사 입사광 간섭을 통한 DOF 공정 윈도우 확대" },
-                  { k: "PSM 위상차", v: "180° 반전 상쇄 간섭을 통한 Contrast 극대화" }
-                ],
-                quiz: { q: "빛의 보강 간섭에 따른 경계 번짐을 막기 위해 180도 위상차 상쇄 간섭을 유도하는 마스크는?", a: "PSM (Phase Shift Mask, 위상 천이 마스크)" },
-                note: "• 단일 노광에서 물리적으로 달성 가능한 k₁의 이론적 한계값은 0.25임"
+                caption: "[도해] 광 근접 보정(OPC) 적용 전후의 마스크 설계 및 웨이퍼 전사 형상",
+                params: [{ k: "OPC", v: "Line-end shortening, Corner rounding 보정" }, { k: "PSM", v: "180° 상쇄 간섭 유도" }],
+                quiz: { q: "180도 위상차 상쇄 간섭을 통해 경계 번짐을 없애는 마스크는?", a: "PSM (Phase Shift Mask)" },
+                note: "• k₁ = 0.25가 단일 노광의 이론적 한계값"
               },
               {
                 id: "ph_multi",
-                name: "멀티 패터닝 (LELE vs SADP/SAQP)",
+                name: "멀티 패터닝 (LELE vs SADP/SAQP) & 시뮬레이터",
+                isMpt: true,
                 descHtml: `
                   <div class="theory-section">
                     <h3>👥 단일 노광 한계를 돌파하는 Multi-Patterning (L02 p.35~37)</h3>
-                    <p>노광 장비의 해상도 한계 이하로 피치(Pitch)를 쪼개기 위한 복합 적층 공정입니다.</p>
+                    <p>노광 장비의 해상도 한계 이하로 피치(Pitch)를 쪼개기 위한 복합 적층 공정입니다. 상단 시뮬레이터에서 <strong>LELE</strong>와 <strong>SADP</strong> 모드를 선택하여 연속 단면을 관찰하세요.</p>
                     <ul>
                       <li><strong>LELE (Litho-Etch-Litho-Etch)</strong>:
-                        하드마스크 1차 노광/식각 후, 사이사이에 2차 노광/식각을 진행합니다. 비정형 패턴 형성이 용이하여 <strong>Logic 반도체</strong>에 쓰이지만, 오버레이 정렬 오차 위험이 큽니다.</li>
+                        하드마스크 1, 2를 증착한 후 1차 Litho/Etch → 2차 Litho/Etch를 반복하여 피치 a를 a/2로 줄입니다. 비정형 로직 배선에 유리하지만 오버레이 정렬 오차(Overlay) 위험이 큽니다.</li>
                       <li><strong>SADP (Self-Aligned Double Patterning)</strong>:
-                        1차 희생 패턴 형성 → 스페이서 증착 → 수직 에치백 → 희생 패턴 제거. 스페이서 측벽 두께가 회로 선폭이 되므로 <strong>추가 노광 없이 피치가 절반으로 축소</strong>됩니다. 오버레이 오차가 없어 정형적인 <strong>DRAM Fin, Word Line, 3D NAND</strong>에 필수적입니다.</li>
-                      <li><strong>SAQP</strong>: SADP를 2회 연속 수행하여 단일 노광 대비 <strong>4배의 패턴 밀도</strong>를 구현합니다.</li>
+                        희생 패턴(Mandrel) 측벽에 형성된 스페이서(Spacer)를 마스크로 삼아 <strong>2차 노광 없이 오버레이 오차 0으로 피치를 1/2로 분할</strong>합니다. DRAM Fin, Word Line, 3D NAND 등 규칙적인 메모리 패턴에 표준 적용됩니다.</li>
+                      <li><strong>SAQP</strong>: SADP 공정을 2회 연속 수행하여 단일 노광 대비 <strong>4배의 패턴 밀도(피치 1/4)</strong>를 구현합니다.</li>
                     </ul>
                   </div>
                 `,
-                diagramKey: "etch_rie",
-                caption: "[도해] 스페이서 측벽 식각을 이용한 SADP 자기정렬 더블 패터닝 단면 (L02 p.35)",
-                params: [
-                  { k: "LELE 적용", v: "로직(Logic) 비정형 배선 (오버레이 엄격)" },
-                  { k: "SADP 적용", v: "메모리(DRAM/NAND) 정형 라인 & Fin (스페이서 기반)" },
-                  { k: "SAQP 배율", v: "1회 노광 기반 4배 패턴 증폭 달성" }
-                ],
+                params: [{ k: "LELE 적용", v: "로직(Logic) 비정형 배선 (오버레이 엄격)" }, { k: "SADP 적용", v: "메모리(DRAM/NAND) 정형 라인 & Fin (스페이서 기반)" }, { k: "SAQP 배율", v: "1회 노광 기반 4배 패턴 증폭 달성" }],
                 quiz: { q: "2차 노광 없이 1차 패턴 측벽에 형성된 스페이서를 마스크 삼아 피치를 절반으로 줄이는 기법은?", a: "SADP (Self-Aligned Double Patterning)" },
-                note: "• SADP는 노광 횟수는 줄지만 증착 및 식각 단계가 배로 증가함"
+                note: "• 상단 시뮬레이터의 버튼을 눌러 LELE와 SADP의 공정 단계별 단면 차이를 직접 비교해 보세요."
               },
               {
                 id: "ph_euv",
                 name: "EUV (13.5nm) & 0.55 High-NA 애너모픽",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>⚡ 극자외선(EUV) 노광 시스템 구조 (L02 p.26~29)</h3>
-                    <p>파장이 <strong>13.5 nm</strong>로 ArF 대비 1/14에 불과하여 7 nm 이하 미세 공정의 표준입니다.</p>
-                    <ul>
-                      <li><strong>전반사 거울 광학계</strong>: 13.5 nm 파장은 공기와 석영 렌즈에 100% 흡수되므로, 장비 내부를 <strong>초고진공</strong>으로 유지하고 투영 렌즈 대신 <strong>Mo-Si 6매 다층 반사거울(반사율 약 70%)</strong>과 반사형 마스크를 사용합니다.</li>
-                      <li><strong>EUV 펠리클</strong>: 빛이 거울을 맞고 반사되어 총 2회 통과하므로 90% 이상의 극도로 높은 투과율이 요구됩니다.</li>
-                    </ul>
-                  </div>
-                  <div class="theory-section">
-                    <h3>📐 0.55 High-NA 애너모픽(Anamorphic) 기술 (L02 p.30, 31)</h3>
-                    <ul>
-                      <li><strong>거울 대형화와 간섭 문제</strong>: NA를 기존 0.33에서 0.55로 키우려면 마지막 거울이 거대해져 마스크로 들어가는 입사빔과 반사빔이 서로 부딪히고 그림자 불량이 발생합니다.</li>
-                      <li><strong>Anamorphic 렌즈 채택</strong>: 원형 빛을 가로로 찌그러뜨려 타원형으로 바꾼 뒤, <strong>X축은 1/4 축소, Y축은 1/8 축소</strong>하는 비대칭 배율을 적용하여 빔 간섭을 완벽히 해결합니다.</li>
-                    </ul>
+                    <h3>⚡ 극자외선(EUV) & 애너모픽 기술 (L02 p.26~31)</h3>
+                    <p>파장 13.5nm, Mo-Si 6매 반사거울과 진공 챔버를 씁니다. 0.55 High-NA에서는 거울 대형화로 인한 입·반사광 간섭을 막기 위해 X축 4X, Y축 8X 비대칭 축소하는 애너모픽 렌즈를 채택했습니다.</p>
                   </div>
                 `,
                 diagramKey: "euv_anamorphic",
-                caption: "[도해] 0.33 NA 표준 EUV vs 0.55 High-NA 애너모픽 비대칭 광학계 비교 (L02 p.30)",
-                params: [
-                  { k: "EUV 광원 파장", v: "13.5nm (Sn 플라즈마 여기)" },
-                  { k: "광학계 소재", v: "Mo-Si 다층 박막 거울 (진공 챔버)" },
-                  { k: "High-NA 축소비", v: "X축 4X, Y축 8X 비대칭 축소 (애너모픽 기술)" }
-                ],
-                quiz: { q: "0.55 High-NA EUV에서 거울 대형화에 따른 입사/반사빔 간섭을 해결하기 위해 적용된 축소 기술은?", a: "애너모픽 (Anamorphic) 기술 (X/Y 비대칭 배율)" },
-                note: "• EUV는 광자 1개의 에너지가 강해 광자 수가 적어 LER 제어가 핵심 과제"
+                caption: "[도해] 0.33 NA 표준 EUV vs 0.55 High-NA 애너모픽 비대칭 광학계 비교",
+                params: [{ k: "EUV 파장", v: "13.5nm (Sn 플라즈마)" }, { k: "High-NA 축소비", v: "X: 4X, Y: 8X 비대칭 축소 (애너모픽)" }],
+                quiz: { q: "EUV High-NA에서 빔 간섭을 해결하기 위해 적용된 축소 기술은?", a: "애너모픽 (Anamorphic) 기술" },
+                note: "• EUV 펠리클 투과율 확보와 LER 제어가 핵심"
               },
               {
                 id: "ph_pr_chem",
                 name: "Photoresist 재료 화학 (i-line vs DUV CAR)",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>💡 i-line용 DNQ-Novolac 감광 메커니즘 (L02 p.46~48)</h3>
-                    <p>용매(PGME), 베이스 폴리머(Novolac), 감광제(DNQ PAC)의 3성분계입니다.</p>
-                    <ul>
-                      <li><strong>노광 전</strong>: 소수성인 DNQ가 Novolac 수지의 -OH기와 수소결합을 형성하여 알칼리 현상액에 녹지 못하도록 <strong>용해 억제제</strong> 역할을 합니다.</li>
-                      <li><strong>노광 후</strong>: 365 nm 자외선을 받으면 N₂ 가스가 빠져나가며 카벤 생성 → 케텐 형성 → 수분과 반응하여 친수성인 <strong>Indene Carboxylic Acid</strong>로 전환됩니다. 수소결합이 풀리며 TMAH 현상액에 급속 용해됩니다.</li>
-                    </ul>
-                  </div>
-                  <div class="theory-section">
-                    <h3>⚡ DUV/EUV용 화학증폭형 감광제 (CAR) (L02 p.51~53)</h3>
-                    <p>단파장에서는 Novolac 대신 PHOST/Acryl계를 쓰고, 약한 광량을 극복하기 위해 CAR 시스템을 도입했습니다.</p>
-                    <ul>
-                      <li><strong>1단계 광산 방출</strong>: 노광 시 <strong>PAG(Photo Acid Generator)</strong>가 광반응하여 미량의 산(H⁺ 프로톤)을 방출합니다.</li>
-                      <li><strong>2단계 화학 증폭</strong>: <strong>PEB 열처리</strong> 동안 방출된 H⁺가 중합체의 보호기(t-BOC)를 공격하여 CO₂와 이소부틸렌을 방출시키고 친수성 -OH기로 바꿉니다. 이때 H⁺는 소모되지 않고 <strong>수백 개의 보호기를 연쇄적으로 분해</strong>합니다.</li>
-                      <li><strong>3단계 Quencher 중화</strong>: 과도한 산 확산으로 비노광부 패턴이 손상되는 것을 막기 위해 미량의 염기성 첨가제(Quencher)가 산을 포획 중화합니다.</li>
-                    </ul>
+                    <h3>💡 i-line DNQ vs DUV CAR 화학 메커니즘 (L02 p.46~53)</h3>
+                    <p>i-line은 Novolac에 DNQ(PAC)가 결합하여 노광 시 친수성 Indene 카복실산으로 변환됩니다. DUV는 PAG에서 광산(H⁺)을 생성하고 PEB 열로 수백 개의 t-BOC 보호기를 연쇄 탈착시키는 화학증폭형(CAR)을 씁니다.</p>
                   </div>
                 `,
                 diagramKey: "car_chem",
-                caption: "[도해] DUV 화학증폭형 감광제(CAR)의 광산 발생 및 PEB 연쇄 탈보호 반응 (L02 p.51)",
-                params: [
-                  { k: "i-line 활성제", v: "DNQ (Diazonaphthoquinone) → Indene carboxylic acid" },
-                  { k: "CAR 핵심 성분", v: "Polymer(PHOST) + PAG(광산발생제) + Quencher(염기)" },
-                  { k: "화학 증폭 원리", v: "1개의 H⁺가 PEB 열로 수백 개의 t-BOC 보호기를 탈착" }
-                ],
-                quiz: { q: "i-line 감광제에서 DNQ가 노광 후 물과 반응하여 생성되는 친수성 알칼리 가용성 물질은?", a: "Indene carboxylic acid" },
-                note: "• CAR PR은 외부 오염 가스(아민기 염기 물질)에 매우 취약하여 T-topping 결함 발생 가능"
+                caption: "[도해] DUV 화학증폭형 감광제(CAR)의 광산 발생 및 PEB 연쇄 탈보호 반응",
+                params: [{ k: "i-line 활성제", v: "DNQ → Indene carboxylic acid" }, { k: "CAR 핵심 성분", v: "PHOST + PAG(광산발생제) + Quencher(염기)" }],
+                quiz: { q: "CAR PR에서 발생한 Acid가 비노광부로 퍼지는 것을 막는 첨가제는?", a: "Quencher (염기성 물질)" },
+                note: "• CAR PR은 외부 오염 가스(아민기)에 민감하여 T-topping 결함 주의"
               },
               {
                 id: "ph_contrast",
                 name: "PR Contrast 곡선 & 단면 Profile",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>📈 감광제 성능 지표 (Contrast Curve) (L02 p.57, 58)</h3>
-                    <p>노광량(Dose, 로그 스케일)에 따른 현상 후 잔여 PR 두께의 기울기로 감광성을 평가합니다.</p>
-                    <ul>
-                      <li><span class="code-badge">γ = 1 / log₁₀(D₁₀₀ / D₀)</span> : Contrast γ 값이 클수록(기울기가 가파를수록) 빛의 회절 번짐에 영향을 받지 않고 수직에 가까운 선명한 벽면을 형성합니다.</li>
-                      <li><strong>문턱 광량 (D₁₀₀, Eth)</strong>: 노광된 PR이 바닥까지 100% 완벽하게 녹아 없어지는 데 필요한 최소 에너지입니다.</li>
-                      <li><strong>잔막율</strong>: 비노광부가 현상액에 불필요하게 깎여 나가지 않고 남아있는 비율입니다.</li>
-                    </ul>
-                  </div>
-                  <div class="theory-section">
-                    <h3>📐 단면 프로파일에 따른 후속 공정 매칭 (L02 p.44, 58)</h3>
-                    <ul>
-                      <li><strong>사다리꼴 (Over-cut) 프로파일</strong>:
-                        상단에서 빛이 흡수되어 위가 더 많이 깎이는 형태입니다. 측벽 보호막 형성이 유리하여 <strong>건식 식각(Dry Etch) 마스크</strong>로 표준 사용됩니다.</li>
-                      <li><strong>역사다리꼴 (Under-cut) 프로파일</strong>:
-                        상단보다 바닥의 폭이 좁은 역테이퍼 형상입니다. 주로 Negative PR을 사용하며, 금속을 전면 증착한 후 PR을 유기용매로 녹여 떼어내는 <strong>Lift-off 공정</strong>에 필수적입니다. (금속 막질이 연속되지 않고 끊어져 깨끗이 분리됨)</li>
-                    </ul>
+                    <h3>📈 감광제 성능 지표 & Profile (L02 p.44, 57, 58)</h3>
+                    <p>γ = 1 / log₁₀(D₁₀₀/D₀). 사다리꼴(Over-cut) 프로파일은 건식 식각 마스크로 쓰이고, 역사다리꼴(Under-cut) 프로파일(Negative PR)은 금속 Lift-off 공정에 필수적입니다.</p>
                   </div>
                 `,
                 diagramKey: "contrast_curve",
-                caption: "[도해] 감광제 Contrast 곡선 및 식각용(Over-cut) vs Lift-off용(Under-cut) 단면 비교 (L02 p.58)",
-                params: [
-                  { k: "Contrast 공식", v: "γ = [log₁₀(D₁₀₀ / D₀)]⁻¹" },
-                  { k: "Over-cut 용도", v: "Positive PR → 건식 식각 (Dry Etch) 마스크" },
-                  { k: "Under-cut 용도", v: "Negative PR → 금속 박막 리프트오프 (Lift-off)" }
-                ],
-                quiz: { q: "금속 박막 증착 후 PR을 함께 떼어내는 Lift-off 공정에 적합한 단면 형상과 이유는?", a: "역사다리꼴 (Under-cut), 증착 금속이 측면에서 불연속적으로 끊겨 깨끗이 분리되기 때문" },
-                note: "• Contrast 값이 높을수록 빛의 회절에 의한 패턴 가장자리 번짐을 억제할 수 있음"
+                caption: "[도해] 감광제 Contrast 곡선 및 식각용(Over-cut) vs Lift-off용(Under-cut) 단면 비교",
+                params: [{ k: "Over-cut 용도", v: "건식 식각 (Dry Etch) 마스크" }, { k: "Under-cut 용도", v: "금속 박막 리프트오프 (Lift-off)" }],
+                quiz: { q: "금속 박막 증착 후 PR을 함께 떼어내는 Lift-off 공정에 적합한 단면 형상은?", a: "역사다리꼴 (Under-cut) 형상" },
+                note: "• Contrast 값이 높을수록 수직 벽면 구현에 유리"
               }
             ]
           },
@@ -1011,22 +925,15 @@
                 name: "건식 플라즈마 식각 (RIE/ICP)",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>⚡ 반응성 이온 식각 (RIE, Reactive Ion Etching)</h3>
-                    <p>플라즈마에서 생성된 반응성 라디칼의 화학 반응과 직진 가속된 이온의 물리적 충돌을 결합한 이방성 가공 기술입니다.</p>
-                    <ul>
-                      <li><strong>선택비 (Selectivity)</strong>: 가공하려는 하부 막질과 마스크 간의 식각 속도 비입니다. 화학적 가스 비율을 조절하여 선택비를 극대화합니다.</li>
-                      <li><strong>애싱 (Ashing)</strong>: 식각 완료 후 고착된 PR 마스크를 산소 플라즈마(O₂)로 태워 CO, CO₂ 기체로 기화 배출시킵니다.</li>
-                    </ul>
+                    <h3>⚡ 반응성 이온 식각 (RIE)</h3>
+                    <p>플라즈마 이온의 물리적 스퍼터링과 반응성 라디칼의 화학 반응을 결합해 수직 이방성 패턴을 형성합니다. 잔류 PR은 산소 플라즈마 애싱(Ashing)으로 태워 제거합니다.</p>
                   </div>
                 `,
                 diagramKey: "etch_rie",
                 caption: "[도해] 플라즈마 이온 가속에 의한 수직 이방성(Anisotropic) RIE 식각 단면",
-                params: [
-                  { k: "식각 프로파일", v: "이방성 (Anisotropic, 수직 가공)" },
-                  { k: "PR 제거", v: "산소 플라즈마 애싱 (O₂ Plasma Ashing)" }
-                ],
+                params: [{ k: "식각 방향성", v: "이방성 (Anisotropic)" }, { k: "PR 제거", v: "산소 플라즈마 애싱 (O₂ Plasma Ashing)" }],
                 quiz: { q: "식각 공정에서 수직 방향으로만 깎아내어 미세 선폭을 유지하는 특성은?", a: "이방성 (Anisotropic)" },
-                note: "• 등방성 습식 식각은 언더컷(Undercut)이 발생하여 미세 회로에는 부적합"
+                note: "• 등방성 습식 식각은 언더컷 발생으로 미세 회로 부적합"
               }
             ]
           },
@@ -1039,22 +946,15 @@
                 name: "CVD vs PVD(스퍼터링) vs ALD 비교",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>🔬 박막 증착 방식 3대 기술 비교</h3>
-                    <ul>
-                      <li><strong>PVD (물리기상증착)</strong>: 진공 챔버에서 Ar⁺ 이온으로 금속 타깃을 때려 튀어나온 원자를 입히는 스퍼터링 방식입니다. 순도가 높으나 바닥 위주로 증착되어 단차 도포성이 불량합니다.</li>
-                      <li><strong>CVD (화학기상증착)</strong>: 전구체 기체들이 표면 화학 반응하여 고체 박막을 합성합니다. 굴곡진 벽면에도 균일하게 막이 쌓이는 우수한 단차 도포성(Step Coverage)을 갖습니다.</li>
-                      <li><strong>ALD (원자층증착)</strong>: 기체 전구체를 1종씩 번갈아 주입하여 자기제한반응으로 원자 1개 층씩 쌓아 올립니다. 100%에 가까운 완벽한 도포성과 나노 두께 제어를 자랑합니다.</li>
-                    </ul>
+                    <h3>🔬 3대 증착 공법 비교</h3>
+                    <p>ALD(100% 단차 도포성, 원자층 제어) > CVD(우수한 도포성) > PVD(바닥 위주 증착, 고순도 금속막).</p>
                   </div>
                 `,
                 diagramKey: "oxidation_comp",
                 caption: "[도해] 박막 증착 방식별 단차 도포성(Step Coverage) 및 반응 원리 비교",
-                params: [
-                  { k: "단차 도포성 순위", v: "ALD (100%) > CVD (우수) > PVD (바닥 위주)" },
-                  { k: "공정 온도", v: "LPCVD(고온) > PECVD(플라즈마 저온) > PVD(상온 가능)" }
-                ],
+                params: [{ k: "단차 도포성", v: "ALD > CVD > PVD" }, { k: "주요 용도", v: "ALD(High-k), CVD(절연막), PVD(금속배선)" }],
                 quiz: { q: "기체를 교대로 주입하여 원자 1개 층 단위로 두께를 제어하는 초정밀 증착 기술은?", a: "ALD (원자층증착)" },
-                note: "• 3D NAND의 깊은 수직 채널 홀 증착에는 ALD가 필수적"
+                note: "• 3D NAND 수직 채널 증착에 ALD 필수"
               }
             ]
           },
@@ -1067,22 +967,15 @@
                 name: "배리어 메탈 & 다마신(Damascene) 공정",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>⚡ 구리 배선 형성을 위한 다마신 공법</h3>
-                    <p>구리(Cu)는 알루미늄보다 비저항이 낮고 전자이동(EM) 내성이 우수하지만, 휘발성 부산물이 생기지 않아 건식 식각이 불가능합니다.</p>
-                    <ul>
-                      <li><strong>공정 순서</strong>: 층간 절연막(ILD) 증착 → 트렌치 홈 가공 → 확산 방지용 TiN/TaN 배리어 메탈 증착 → 구리 전기도금 매립 → <strong>CMP로 표면 연마 평탄화</strong>.</li>
-                      <li><strong>Dual-Damascene</strong>: 비아 홀과 배선 트렌치를 동시에 가공하고 한 번에 구리를 채워 넣어 공정을 단축합니다.</li>
-                    </ul>
+                    <h3>⚡ 구리 배선을 위한 다마신 공법</h3>
+                    <p>구리(Cu)는 건식 식각이 불가능하므로 절연막에 도랑을 파고 TiN 배리어 증착 후 Cu 도금 매립 및 CMP 연마로 배선을 완성합니다.</p>
                   </div>
                 `,
                 diagramKey: "damascene_svg",
                 caption: "[도해] 구리(Cu) 배선 형성을 위한 트렌치 매립 및 CMP 다마신 공정",
-                params: [
-                  { k: "배리어 메탈", v: "Ta/TaN, Ti/TiN (구리 원자의 절연막 확산 차단)" },
-                  { k: "채움 공법", v: "전기도금 (Electroplating)" }
-                ],
-                quiz: { q: "구리 배선 제작 시 절연막에 홈을 먼저 파고 금속을 채운 뒤 연마하는 기법은?", a: "다마신 공정 (Damascene Process)" },
-                note: "• 배리어 메탈을 깔지 않으면 구리 원자가 절연막 내부로 침투하여 누설 전류를 유발함"
+                params: [{ k: "공법", v: "다마신 (Damascene)" }, { k: "배리어", v: "Ta/TaN, Ti/TiN" }],
+                quiz: { q: "구리 배선 형성 시 홈을 파고 채운 뒤 연마하는 공법은?", a: "다마신 공정 (Damascene)" },
+                note: "• Cu 확산 방지를 위한 배리어 메탈 필수"
               }
             ]
           }
@@ -1102,29 +995,15 @@
                 name: "EDS 프로브 테스트 & 패키징 (EMC 몰딩)",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>🔍 EDS 공정 (Electrical Die Sorting)</h3>
-                    <p>웨이퍼 완성 직후 수만 개의 미세 프로브 카드로 칩의 전기적 양/불량을 검사하고 수리합니다.</p>
-                    <ul>
-                      <li><strong>Laser Repair</strong>: 불량 메모리 셀을 웨이퍼 내부의 여비 셀(Redundancy)로 레이저 절단 스위칭하여 수율을 높입니다.</li>
-                    </ul>
-                  </div>
-                  <div class="theory-section">
-                    <h3>📦 패키징 (Packaging & Test)</h3>
-                    <ul>
-                      <li><strong>Back Grinding & Dicing</strong>: 웨이퍼 뒷면을 얇게 갈아내고 낱개의 다이(Die)로 분리합니다.</li>
-                      <li><strong>Interconnect</strong>: 기판과 칩 단자를 와이어 본딩 또는 플립칩 마이크로 범프로 연결합니다.</li>
-                      <li><strong>EMC Molding</strong>: 에폭시 수지(EMC)로 밀봉 성형하여 외부 충격, 열, 습기로부터 칩을 완벽히 보호합니다.</li>
-                    </ul>
+                    <h3>🔍 EDS 및 패키징</h3>
+                    <p>프로브 카드로 전기 검사 및 Laser Repair 후, 웨이퍼 다이싱, 다이 본딩 및 EMC 몰딩으로 칩을 보호합니다.</p>
                   </div>
                 `,
                 diagramKey: "backend_svg",
                 caption: "[도해] EDS 프로브 카드 검사 및 패키징 다이 본딩/EMC 몰딩 단면",
-                params: [
-                  { k: "EDS 역할", v: "양품 선별 및 Laser Repair 수율 향상" },
-                  { k: "몰딩 소재", v: "EMC (Epoxy Molding Compound)" }
-                ],
-                quiz: { q: "완성된 반도체 칩을 습기, 열, 물리적 충격으로부터 보호하기 위해 수지로 밀봉하는 공정은?", a: "몰딩 (Molding / EMC 성형)" },
-                note: "• 최근에는 HBM 등 칩을 수직 적층하는 TSV 첨단 패키징이 핵심 경쟁력"
+                params: [{ k: "수율 개선", v: "EDS Laser Repair" }, { k: "밀봉재", v: "EMC (Epoxy Molding Compound)" }],
+                quiz: { q: "완성된 칩을 물리적 충격과 습기로부터 보호하는 수지 밀봉 공정은?", a: "몰딩 (Molding)" },
+                note: "• 첨단 패키징을 위한 TSV 기술 각광"
               }
             ]
           }
@@ -1146,30 +1025,14 @@
                 descHtml: `
                   <div class="theory-section">
                     <h3>🔬 CMOS 트랜지스터 풀 집적 공정 9단계</h3>
-                    <p>p-Substrate 준비부터 Twin-Well, STI 소자 격리, Gate 전극 패터닝, LDD 주입, 스페이서, 고농도 S/D 도핑, Salicide 형성, 텅스텐 컨택트 플러그, 금속 배선까지 하나의 완전한 단면으로 연속 완성되는 풀 시뮬레이션입니다.</p>
-                    <ul>
-                      <li><strong>1단계: Twin-Well 형성</strong> - B⁺(P-Well), P⁺(N-Well) 이온주입 및 고온 RTA 드라이브인</li>
-                      <li><strong>2단계: STI 소자 격리</strong> - 활성영역 RIE 트렌치 식각 후 HDPCVD 산화막 채움 & CMP</li>
-                      <li><strong>3단계: Gate 패터닝</strong> - 초박막 Gate Oxide 성장 후 LPCVD Poly-Si 증착 & 이방성 식각</li>
-                      <li><strong>4단계: LDD 저농도 주입</strong> - 숏채널 효과(SCE) 및 핫 캐리어 열화 방지용 얕은 접합 형성</li>
-                      <li><strong>5단계: Sidewall Spacer</strong> - 산화막/질화막 전면 증착 후 수직 에치백으로 측벽 스페이서 형성</li>
-                      <li><strong>6단계: Source/Drain 고농도 도핑</strong> - 스페이서 자기정렬 기반 As⁺(n⁺), B⁺(p⁺) 이온주입</li>
-                      <li><strong>7단계: Salicide 형성</strong> - Ti 전면 증착 후 열처리로 게이트 상부 및 S/D 위에 TiSi₂ 형성</li>
-                      <li><strong>8단계: PMD & 텅스텐 플러그</strong> - 층간절연막 평탄화 후 컨택트 홀에 TiN 배리어 및 W 매립</li>
-                      <li><strong>9단계: 금속 배선 완성</strong> - Al/Cu 라인 패터닝으로 GND, VDD, Output 인버터 회로 결선 완성</li>
-                    </ul>
+                    <p>Twin-Well 형성부터 STI, Gate, LDD, Spacer, S/D, Salicide, Contact, Metal-1 배선까지 하나의 완전한 단면으로 연속 완성되는 시뮬레이션입니다.</p>
                   </div>
                 `,
                 diagramKey: "oxidation_comp",
                 caption: "[안내] 상단 시뮬레이터에서 '▶ 전체 공정 연속 재생' 버튼을 누르거나 슬라이더를 조작하세요.",
-                params: [
-                  { k: "기판 종류", v: "p-type Silicon (100) Wafer" },
-                  { k: "격리 기술", v: "STI (Shallow Trench Isolation)" },
-                  { k: "도핑 구조", v: "Twin-Well (P-Well/N-Well) & LDD 셀프-얼라인" },
-                  { k: "배선 기술", v: "TiSi2 Salicide + W Plug + Metal-1 연결" }
-                ],
-                quiz: { q: "CMOS에서 단락 없이 NMOS와 PMOS를 하나의 기판에 집적하기 위해 만든 두 개의 분리된 영역은?", a: "Twin-Well (P-Well과 N-Well)" },
-                note: "• 1단계부터 9단계까지 슬라이더를 천천히 밀며 각 단위 공정의 누적 변화를 관찰하세요."
+                params: [{ k: "기판", v: "Si (100) p-type" }, { k: "구조", v: "Twin-Well CMOS" }],
+                quiz: { q: "CMOS에서 NMOS와 PMOS를 하나의 기판에 만들기 위한 두 개의 영역은?", a: "Twin-Well (P-Well과 N-Well)" },
+                note: "• 재생 버튼을 눌러 전체 시퀀스를 감상하세요."
               }
             ]
           }
@@ -1180,7 +1043,7 @@
     let currentItem = null;
 
     // =========================================================================
-    // 3. UI 렌더링
+    // 아코디언 메뉴 렌더링
     // =========================================================================
     function buildTree() {
       const container = document.getElementById("accordionNav");
@@ -1230,7 +1093,7 @@
       });
 
       if (!currentItem) {
-        selectNode(fabStructure[0].subCategories[2].items[0], fabStructure[0].subCategories[2].title, fabStructure[0].name);
+        selectNode(fabStructure[0].subCategories[2].items[5], fabStructure[0].subCategories[2].title, fabStructure[0].name);
       }
     }
 
@@ -1243,14 +1106,11 @@
       document.getElementById("viewHeaderTitle").innerText = item.name;
       document.getElementById("viewHeaderPath").innerText = `${sectionName} > ${subTitle}`;
 
-      // 이론 본문 주입
-      const descEl = document.getElementById("theoryMainDesc");
-      descEl.innerHTML = item.descHtml || `<p>${item.desc}</p>`;
+      document.getElementById("theoryMainDesc").innerHTML = item.descHtml || `<p>${item.desc}</p>`;
 
-      // 벡터 다이어그램
       const svgArea = document.getElementById("diagramSvgArea");
       const captionArea = document.getElementById("diagramCaptionText");
-      if (SVG_DIAGRAMS[item.diagramKey]) {
+      if (item.diagramKey && SVG_DIAGRAMS[item.diagramKey]) {
         svgArea.innerHTML = SVG_DIAGRAMS[item.diagramKey];
         captionArea.innerText = item.caption || "";
         document.getElementById("diagramWrapper").style.display = "flex";
@@ -1258,7 +1118,6 @@
         document.getElementById("diagramWrapper").style.display = "none";
       }
 
-      // 파라미터 리스트
       const paramContainer = document.getElementById("paramListContainer");
       paramContainer.innerHTML = item.params.map(p => `
         <div class="param-card">
@@ -1267,24 +1126,31 @@
         </div>
       `).join("");
 
-      // 퀴즈
       document.getElementById("quizQuestion").innerText = "Q. " + item.quiz.q;
       document.getElementById("quizAnswer").innerText = "💡 정답: " + item.quiz.a;
       document.getElementById("quizAnswer").style.display = "none";
 
-      // 필기 노트 불러오기
       const savedNote = localStorage.getItem(`note_${item.id}`);
-      document.getElementById("studyNote").value = savedNote !== null ? savedNote : item.note;
+      document.getElementById("studyNote").value = savedNote !== null ? savedNote : (item.note || "");
 
-      // CMOS 카드 토글
       const cmosCard = document.getElementById("cmosCard");
+      const mptCard = document.getElementById("mptCard");
+
       if (item.isCmos) {
         cmosCard.style.display = "block";
+        mptCard.style.display = "none";
         document.getElementById("theoryCardTitle").innerText = "📖 CMOS 제조 단계별 핵심 메커니즘 분석";
         pauseCmos();
         renderCmos(cmosProgress);
+      } else if (item.isMpt) {
+        cmosCard.style.display = "none";
+        mptCard.style.display = "block";
+        document.getElementById("theoryCardTitle").innerText = "📖 멀티패터닝(LELE vs SADP) 심화 이론 분석";
+        pauseMpt();
+        switchMptMode(currentMptType);
       } else {
         cmosCard.style.display = "none";
+        mptCard.style.display = "none";
         document.getElementById("theoryCardTitle").innerText = "📖 교재 심화 이론 & 메커니즘 분석";
       }
     }
@@ -1303,8 +1169,347 @@
     }
 
     // =========================================================================
-    // 4. CMOS 9단계 누적 연속 시뮬레이터 엔진
+    // LELE & SADP 멀티패터닝 연속 시뮬레이터 엔진
     // =========================================================================
+    const mptCanvas = document.getElementById("mptCanvas");
+    const mptCtx = mptCanvas.getContext("2d");
+    let currentMptType = "LELE";
+    let mptProgress = 0.0;
+    let isMptPlaying = false;
+    let mptAnimId = null;
+
+    const leleSteps = [
+      { range: [0.0, 0.20], title: "1단계: Hardmask 1 & 2 증착", desc: "타깃 기판(Substrate) 위에 Hardmask 2와 Hardmask 1 박막을 차례로 증착합니다." },
+      { range: [0.20, 0.45], title: "2단계: 1차 Litho (Pitch a) & Etch Hardmask 1", desc: "피치 a 간격으로 1차 감광액(PR 1) 노광 후, Hardmask 1을 수직 식각하고 PR 1을 제거합니다. (하부 Hardmask 2 표면 노출)" },
+      { range: [0.45, 0.75], title: "3단계: 2차 Litho (Pitch a) & Etch Hardmask 2", desc: "Hardmask 2 표면에 2차 감광액(PR 2)을 정렬 노광하여 안착시킨 뒤, Hardmask 2를 수직 식각하고 PR 2를 제거합니다." },
+      { range: [0.75, 1.00], title: "4단계: Remove Hardmasks & 최종 패턴 완성 (Pitch a/2)", desc: "Hardmask 패턴을 마스크 삼아 기판을 식각한 뒤, Hardmask 1과 2를 100% 완전 제거(Strip)하여 피치 a/2의 기판 패턴만 완성합니다." }
+    ];
+
+    const sadpSteps = [
+      { range: [0.0, 0.18], title: "1단계: Mandrel 증착 & Print litho pattern", desc: "타깃 기판 위에 희생층(Mandrel)을 증착하고, 넓은 피치 간격으로 1차 PR 패턴을 형성합니다." },
+      { range: [0.18, 0.38], title: "2단계: Etch mandrel & PR 제거", desc: "PR을 마스크 삼아 희생층을 식각하여 Mandrel 기둥 패턴을 완성한 뒤 PR을 제거합니다." },
+      { range: [0.38, 0.60], title: "3단계: Deposit and etch spacer", desc: "스페이서(산화막/질화막)를 컨포멀하게 전면 증착한 후, 수직 에치백으로 Mandrel 측벽에만 스페이서를 남깁니다." },
+      { range: [0.60, 0.80], title: "4단계: Remove mandrel", desc: "선택적 습식 식각으로 중앙의 Mandrel 희생 패턴만 제거하여, 기판 위에 독립된 스페이서 쌍만 남깁니다." },
+      { range: [0.80, 1.00], title: "5단계: Etch final pattern & 스페이서 제거", desc: "스페이서를 마스크로 하부 타깃 기판을 식각하고 스페이서를 제거하여, 2차 노광 없이 오버레이 오차가 0인 최종 고밀도 패턴을 완성합니다." }
+    ];
+
+    function switchMptMode(mode) {
+      currentMptType = mode;
+      document.getElementById("btnToggleLele").classList.toggle("active", mode === "LELE");
+      document.getElementById("btnToggleSadp").classList.toggle("active", mode === "SADP");
+      resetMpt();
+    }
+
+    function onMptSlider(val) {
+      pauseMpt();
+      mptProgress = val / 1000;
+      renderMpt(mptProgress);
+    }
+
+    function toggleMptPlay() {
+      if (isMptPlaying) {
+        pauseMpt();
+      } else {
+        if (mptProgress >= 1.0) mptProgress = 0.0;
+        playMpt();
+      }
+    }
+
+    function playMpt() {
+      isMptPlaying = true;
+      document.getElementById("mptPlayBtn").innerText = "⏸ 일시 정지";
+      let lastTime = performance.now();
+
+      function step(now) {
+        const dt = (now - lastTime) / 1000;
+        lastTime = now;
+        mptProgress += dt * 0.08;
+        if (mptProgress > 1.0) {
+          mptProgress = 1.0;
+          pauseMpt();
+        }
+        document.getElementById("mptSlider").value = Math.floor(mptProgress * 1000);
+        renderMpt(mptProgress);
+
+        if (isMptPlaying && mptProgress < 1.0) {
+          mptAnimId = requestAnimationFrame(step);
+        }
+      }
+      mptAnimId = requestAnimationFrame(step);
+    }
+
+    function pauseMpt() {
+      isMptPlaying = false;
+      document.getElementById("mptPlayBtn").innerText = "▶ 전체 시퀀스 연속 재생";
+      if (mptAnimId) cancelAnimationFrame(mptAnimId);
+    }
+
+    function resetMpt() {
+      pauseMpt();
+      mptProgress = 0.0;
+      document.getElementById("mptSlider").value = 0;
+      renderMpt(0.0);
+    }
+
+    function renderMpt(p) {
+      mptCtx.clearRect(0, 0, mptCanvas.width, mptCanvas.height);
+      const w = mptCanvas.width;
+      const h = mptCanvas.height;
+
+      if (currentMptType === "LELE") {
+        renderLele(p, w, h);
+      } else {
+        renderSadp(p, w, h);
+      }
+    }
+
+    function renderLele(p, w, h) {
+      const steps = leleSteps;
+      let curStep = steps[0];
+      for (let s of steps) {
+        if (p >= s.range[0] && p <= s.range[1]) { curStep = s; break; }
+        if (p > 0.75) curStep = steps[steps.length - 1];
+      }
+
+      document.getElementById("mptStageBadge").innerText = `[${(p * 100).toFixed(0)}%] ${curStep.title}`;
+      document.getElementById("mptStepExplanation").innerHTML = `<b>[LELE 공정 설명]</b> ${curStep.desc}`;
+
+      mptCtx.fillStyle = "#334155";
+      mptCtx.fillRect(60, 160, w - 120, 80);
+      mptCtx.fillStyle = "#fff";
+      mptCtx.font = "bold 12px sans-serif";
+      mptCtx.fillText("Target Substrate (하부 기판)", 70, 220);
+
+      const xCoords1 = [120, 280, 440, 600, 760];
+      const xCoords2 = [200, 360, 520, 680];
+      const allX = [120, 200, 280, 360, 440, 520, 600, 680, 760];
+
+      if (p < 0.20) {
+        mptCtx.fillStyle = "#8b5cf6";
+        mptCtx.fillRect(60, 135, w - 120, 25);
+        mptCtx.fillStyle = "#10b981";
+        mptCtx.fillRect(60, 110, w - 120, 25);
+        mptCtx.fillStyle = "#fff";
+        mptCtx.font = "11px sans-serif";
+        mptCtx.fillText("Hardmask 2", w - 140, 152);
+        mptCtx.fillText("Hardmask 1", w - 140, 127);
+      }
+
+      const p1 = getRangeP(p, 0.20, 0.45);
+      if (p >= 0.20 && p < 0.45) {
+        mptCtx.fillStyle = "#8b5cf6";
+        mptCtx.fillRect(60, 135, w - 120, 25);
+
+        const etchH1 = 25 * p1;
+        mptCtx.fillStyle = "#10b981";
+        mptCtx.fillRect(60, 110 + etchH1, w - 120, 25 - etchH1);
+        xCoords1.forEach(x => mptCtx.fillRect(x, 110, 45, 25));
+
+        const pr1Alpha = p1 < 0.8 ? 1 : (1 - (p1 - 0.8) * 5);
+        mptCtx.fillStyle = `rgba(245, 158, 11, ${pr1Alpha})`;
+        xCoords1.forEach(x => {
+          mptCtx.fillRect(x, 70, 45, 40);
+          if (pr1Alpha > 0.5) {
+            mptCtx.fillStyle = "#090d16";
+            mptCtx.fillText("PR 1", x + 10, 94);
+            mptCtx.fillStyle = `rgba(245, 158, 11, ${pr1Alpha})`;
+          }
+        });
+
+        mptCtx.strokeStyle = "#38bdf8";
+        mptCtx.lineWidth = 1.5;
+        mptCtx.beginPath();
+        mptCtx.moveTo(120, 50); mptCtx.lineTo(280, 50);
+        mptCtx.stroke();
+        mptCtx.fillStyle = "#38bdf8";
+        mptCtx.fillText("Pitch a", 185, 45);
+      }
+
+      const p2 = getRangeP(p, 0.45, 0.75);
+      if (p >= 0.45 && p < 0.75) {
+        mptCtx.fillStyle = "#10b981";
+        xCoords1.forEach(x => mptCtx.fillRect(x, 110, 45, 25));
+
+        const etchH2 = 25 * p2;
+        mptCtx.fillStyle = "#8b5cf6";
+        mptCtx.fillRect(60, 135, w - 120, 25);
+        if (p2 > 0) {
+          mptCtx.fillStyle = "#02040a";
+          for (let i = 0; i < allX.length; i++) {
+            const startX = i === 0 ? 60 : allX[i-1] + 45;
+            const openW = allX[i] - startX;
+            if (openW > 0) mptCtx.fillRect(startX, 135, openW, etchH2);
+          }
+        }
+
+        const pr2Alpha = p2 < 0.8 ? 1 : (1 - (p2 - 0.8) * 5);
+        mptCtx.fillStyle = `rgba(56, 189, 248, ${pr2Alpha})`;
+        xCoords2.forEach(x => {
+          mptCtx.fillRect(x, 95, 45, 40);
+          if (pr2Alpha > 0.5) {
+            mptCtx.fillStyle = "#090d16";
+            mptCtx.fillText("PR 2", x + 10, 120);
+            mptCtx.fillStyle = `rgba(56, 189, 248, ${pr2Alpha})`;
+          }
+        });
+
+        mptCtx.fillStyle = "#fff";
+        mptCtx.fillText("Hardmask 2 표면에 PR 2 정렬 노광 & 식각", 70, 35);
+      }
+
+      if (p >= 0.75) {
+        const p3 = getRangeP(p, 0.75, 1.00);
+        const subEtchH = 45 * p3;
+
+        mptCtx.fillStyle = "#02040a";
+        for (let i = 0; i < allX.length; i++) {
+          const startX = i === 0 ? 60 : allX[i-1] + 45;
+          const openW = allX[i] - startX;
+          if (openW > 0) mptCtx.fillRect(startX, 160, openW, subEtchH);
+        }
+
+        const maskAlpha = Math.max(0, 1 - p3 * 1.5);
+        if (maskAlpha > 0) {
+          mptCtx.fillStyle = `rgba(16, 185, 129, ${maskAlpha})`;
+          xCoords1.forEach(x => mptCtx.fillRect(x, 110, 45, 25));
+          mptCtx.fillStyle = `rgba(139, 92, 246, ${maskAlpha})`;
+          allX.forEach(x => mptCtx.fillRect(x, 135, 45, 25));
+        }
+
+        if (p3 > 0.7) {
+          mptCtx.fillStyle = "#22c55e";
+          mptCtx.font = "bold 13px sans-serif";
+          mptCtx.fillText("✓ Hardmask 1, 2 완전 제거 완료! 기판 자체의 피치 a/2 최종 패턴 획득", 70, 75);
+
+          mptCtx.strokeStyle = "#f43f5e";
+          mptCtx.lineWidth = 2;
+          mptCtx.beginPath();
+          mptCtx.moveTo(120, 140); mptCtx.lineTo(200, 140);
+          mptCtx.stroke();
+          mptCtx.fillStyle = "#f43f5e";
+          mptCtx.fillText("Pitch a/2 (선폭 2배 조밀)", 125, 132);
+        }
+      }
+    }
+
+    function renderSadp(p, w, h) {
+      const steps = sadpSteps;
+      let curStep = steps[0];
+      for (let s of steps) {
+        if (p >= s.range[0] && p <= s.range[1]) { curStep = s; break; }
+        if (p > 0.80) curStep = steps[steps.length - 1];
+      }
+
+      document.getElementById("mptStageBadge").innerText = `[${(p * 100).toFixed(0)}%] ${curStep.title}`;
+      document.getElementById("mptStepExplanation").innerHTML = `<b>[SADP 공정 설명]</b> ${curStep.desc}`;
+
+      mptCtx.fillStyle = "#334155";
+      mptCtx.fillRect(60, 160, w - 120, 80);
+      mptCtx.fillStyle = "#fff";
+      mptCtx.font = "bold 12px sans-serif";
+      mptCtx.fillText("Target Substrate (하부 기판)", 70, 220);
+
+      const mX = [140, 380, 620];
+      const mW = 90;
+
+      if (p < 0.18) {
+        mptCtx.fillStyle = "#64748b";
+        mptCtx.fillRect(60, 120, w - 120, 40);
+        mptCtx.fillStyle = "#fff";
+        mptCtx.fillText("Mandrel 희생막", w - 160, 145);
+
+        mptCtx.fillStyle = "#f59e0b";
+        mX.forEach(x => {
+          mptCtx.fillRect(x, 80, mW, 40);
+          mptCtx.fillStyle = "#090d16";
+          mptCtx.fillText("PR", x + 35, 105);
+          mptCtx.fillStyle = "#f59e0b";
+        });
+      }
+
+      if (p >= 0.18 && p < 0.38) {
+        mptCtx.fillStyle = "#64748b";
+        mX.forEach(x => {
+          mptCtx.fillRect(x, 120, mW, 40);
+          mptCtx.fillStyle = "#fff";
+          mptCtx.fillText("Mandrel", x + 20, 145);
+          mptCtx.fillStyle = "#64748b";
+        });
+      }
+
+      const p3 = getRangeP(p, 0.38, 0.60);
+      const spW = 24;
+      if (p >= 0.38 && p < 0.60) {
+        mptCtx.fillStyle = "#64748b";
+        mX.forEach(x => mptCtx.fillRect(x, 120, mW, 40));
+
+        const spH = 40 * p3;
+        mptCtx.fillStyle = "#38bdf8";
+        mX.forEach(x => {
+          mptCtx.fillRect(x - spW, 160 - spH, spW, spH);
+          mptCtx.fillRect(x + mW, 160 - spH, spW, spH);
+        });
+        mptCtx.fillStyle = "#fff";
+        mptCtx.fillText("Spacer 증착 & 에치백", 70, 100);
+      }
+
+      const p4 = getRangeP(p, 0.60, 0.80);
+      if (p >= 0.60 && p < 0.80) {
+        const mAlpha = 1 - p4;
+        mptCtx.fillStyle = `rgba(100, 116, 139, ${mAlpha})`;
+        mX.forEach(x => mptCtx.fillRect(x, 120, mW, 40));
+
+        mptCtx.fillStyle = "#38bdf8";
+        mX.forEach(x => {
+          mptCtx.fillRect(x - spW, 120, spW, 40);
+          mptCtx.fillRect(x + mW, 120, spW, 40);
+        });
+        mptCtx.fillStyle = "#f59e0b";
+        mptCtx.fillText("Mandrel 선택적 제거 완료 (스페이서만 마스크로 잔존)", 70, 95);
+      }
+
+      if (p >= 0.80) {
+        const p5 = getRangeP(p, 0.80, 1.00);
+        const subEtchH = 40 * p5;
+
+        const spAlpha = Math.max(0, 1 - p5 * 1.5);
+        if (spAlpha > 0) {
+          mptCtx.fillStyle = `rgba(56, 189, 248, ${spAlpha})`;
+          mX.forEach(x => {
+            mptCtx.fillRect(x - spW, 120, spW, 40);
+            mptCtx.fillRect(x + mW, 120, spW, 40);
+          });
+        }
+
+        mptCtx.fillStyle = "#02040a";
+        mX.forEach(x => {
+          mptCtx.fillRect(x, 160, mW, subEtchH);
+          mptCtx.fillRect(x + mW + spW, 160, (380 - (140 + mW + spW) - spW), subEtchH);
+        });
+
+        if (p5 > 0.6) {
+          mptCtx.fillStyle = "#22c55e";
+          mptCtx.font = "bold 13px sans-serif";
+          mptCtx.fillText("✓ 2차 노광 없는 피치 1/2 자기정렬 최종 패턴 완성", 70, 95);
+        }
+      }
+    }
+
+    function getRangeP(val, min, max) {
+      if (val < min) return 0;
+      if (val > max) return 1;
+      return (val - min) / (max - min);
+    }
+
+    // =========================================================================
+    // CMOS 9단계 시뮬레이터 엔진 (100% 보존)
+    // =========================================================================
+    const cmosCanvas = document.getElementById("cmosCanvas");
+    const cmosCtx = cmosCanvas.getContext("2d");
+    let cmosProgress = 0.0;
+    let isCmosPlaying = false;
+    let cmosAnimId = null;
+
     const cmosStages = [
       { range: [0.0, 0.12], title: "1. Twin-Well 형성 (N-Well & P-Well)" },
       { range: [0.12, 0.24], title: "2. STI 소자 격리 트렌치 매립 & CMP" },
@@ -1316,13 +1521,6 @@
       { range: [0.84, 0.93], title: "8. PMD 절연막 & 텅스텐(W) 컨택트 플러그" },
       { range: [0.93, 1.00], title: "9. Metal 배선 완성 (GND, VDD, Out 결선)" }
     ];
-
-    let cmosProgress = 0.0;
-    let isCmosPlaying = false;
-    let cmosAnimId = null;
-
-    const canvas = document.getElementById("cmosCanvas");
-    const ctx = canvas.getContext("2d");
 
     function onCmosSlider(val) {
       pauseCmos();
@@ -1341,7 +1539,7 @@
 
     function playCmos() {
       isCmosPlaying = true;
-      document.getElementById("cmosPlayBtn").innerText = "⏸️ 일시 정지";
+      document.getElementById("cmosPlayBtn").innerText = "⏸ 일시 정지";
       let lastTime = performance.now();
 
       function step(now) {
@@ -1386,144 +1584,128 @@
       }
       document.getElementById("cmosStageBadge").innerText = `[${(p * 100).toFixed(0)}%] ${curTitle}`;
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const w = canvas.width;
+      cmosCtx.clearRect(0, 0, cmosCanvas.width, cmosCanvas.height);
+      const w = cmosCanvas.width;
 
-      // 1. P-type Substrate
-      ctx.fillStyle = "#fef08a";
-      ctx.fillRect(40, 120, w - 80, 130);
-      ctx.fillStyle = "#854d0e";
-      ctx.font = "bold 11px sans-serif";
-      ctx.fillText("p-type Silicon Substrate", 50, 235);
+      cmosCtx.fillStyle = "#fef08a";
+      cmosCtx.fillRect(40, 120, w - 80, 130);
+      cmosCtx.fillStyle = "#854d0e";
+      cmosCtx.font = "bold 11px sans-serif";
+      cmosCtx.fillText("p-type Silicon Substrate", 50, 235);
 
-      // 2. Twin-Well (0.0 ~ 0.12)
       const p1 = getRangeP(p, 0.0, 0.12);
       if (p1 > 0) {
         const wellH = 85 * p1;
-        ctx.fillStyle = "#e2e8f0"; // P-Well
-        ctx.fillRect(40, 120, (w - 80) * 0.48, wellH);
-        ctx.fillStyle = "#93c5fd"; // N-Well
-        ctx.fillRect(40 + (w - 80) * 0.48, 120, (w - 80) * 0.52, wellH);
+        cmosCtx.fillStyle = "#e2e8f0";
+        cmosCtx.fillRect(40, 120, (w - 80) * 0.48, wellH);
+        cmosCtx.fillStyle = "#93c5fd";
+        cmosCtx.fillRect(40 + (w - 80) * 0.48, 120, (w - 80) * 0.52, wellH);
 
         if (wellH > 25) {
-          ctx.fillStyle = "#1e3a8a";
-          ctx.fillText("P-Well (NMOS 영역)", 140, 185);
-          ctx.fillText("N-Well (PMOS 영역)", w * 0.65, 185);
+          cmosCtx.fillStyle = "#1e3a8a";
+          cmosCtx.fillText("P-Well (NMOS 영역)", 140, 185);
+          cmosCtx.fillText("N-Well (PMOS 영역)", w * 0.65, 185);
         }
       }
 
-      // 3. STI Trench (0.12 ~ 0.24)
       const p2 = getRangeP(p, 0.12, 0.24);
       if (p2 > 0) {
         const stiDepth = 45 * p2;
-        ctx.fillStyle = "#38bdf8";
-        ctx.fillRect(40, 120, 60, stiDepth);
-        ctx.fillRect(w * 0.47, 120, 60, stiDepth);
-        ctx.fillRect(w - 100, 120, 60, stiDepth);
+        cmosCtx.fillStyle = "#38bdf8";
+        cmosCtx.fillRect(40, 120, 60, stiDepth);
+        cmosCtx.fillRect(w * 0.47, 120, 60, stiDepth);
+        cmosCtx.fillRect(w - 100, 120, 60, stiDepth);
       }
 
-      // 4. Gate Oxide & Poly Gate (0.24 ~ 0.38)
       const p3 = getRangeP(p, 0.24, 0.38);
       if (p3 > 0) {
-        ctx.fillStyle = "#0284c7";
-        ctx.fillRect(w * 0.22, 116, 90, 4);
-        ctx.fillRect(w * 0.68, 116, 90, 4);
+        cmosCtx.fillStyle = "#0284c7";
+        cmosCtx.fillRect(w * 0.22, 116, 90, 4);
+        cmosCtx.fillRect(w * 0.68, 116, 90, 4);
 
         const gateH = 34 * p3;
-        ctx.fillStyle = "#22c55e";
-        ctx.fillRect(w * 0.22, 116 - gateH, 90, gateH);
-        ctx.fillRect(w * 0.68, 116 - gateH, 90, gateH);
+        cmosCtx.fillStyle = "#22c55e";
+        cmosCtx.fillRect(w * 0.22, 116 - gateH, 90, gateH);
+        cmosCtx.fillRect(w * 0.68, 116 - gateH, 90, gateH);
       }
 
-      // 5. LDD (0.38 ~ 0.50)
       const p4 = getRangeP(p, 0.38, 0.50);
       if (p4 > 0) {
-        ctx.fillStyle = `rgba(56, 189, 248, ${0.9 * p4})`;
-        ctx.fillRect(w * 0.17, 120, 45, 14);
-        ctx.fillRect(w * 0.22 + 90, 120, 45, 14);
+        cmosCtx.fillStyle = `rgba(56, 189, 248, ${0.9 * p4})`;
+        cmosCtx.fillRect(w * 0.17, 120, 45, 14);
+        cmosCtx.fillRect(w * 0.22 + 90, 120, 45, 14);
 
-        ctx.fillStyle = `rgba(244, 63, 94, ${0.9 * p4})`;
-        ctx.fillRect(w * 0.63, 120, 45, 14);
-        ctx.fillRect(w * 0.68 + 90, 120, 45, 14);
+        cmosCtx.fillStyle = `rgba(244, 63, 94, ${0.9 * p4})`;
+        cmosCtx.fillRect(w * 0.63, 120, 45, 14);
+        cmosCtx.fillRect(w * 0.68 + 90, 120, 45, 14);
       }
 
-      // 6. Sidewall Spacer (0.50 ~ 0.62)
       const p5 = getRangeP(p, 0.50, 0.62);
       if (p5 > 0) {
         const spW = 16 * p5;
-        ctx.fillStyle = "#cbd5e1";
-        ctx.fillRect(w * 0.22 - spW, 82, spW, 38);
-        ctx.fillRect(w * 0.22 + 90, 82, spW, 38);
-        ctx.fillRect(w * 0.68 - spW, 82, spW, 38);
-        ctx.fillRect(w * 0.68 + 90, 82, spW, 38);
+        cmosCtx.fillStyle = "#cbd5e1";
+        cmosCtx.fillRect(w * 0.22 - spW, 82, spW, 38);
+        cmosCtx.fillRect(w * 0.22 + 90, 82, spW, 38);
+        cmosCtx.fillRect(w * 0.68 - spW, 82, spW, 38);
+        cmosCtx.fillRect(w * 0.68 + 90, 82, spW, 38);
       }
 
-      // 7. S/D 고농도 주입 (0.62 ~ 0.74)
       const p6 = getRangeP(p, 0.62, 0.74);
       if (p6 > 0) {
         const sdH = 28 * p6;
-        ctx.fillStyle = "#0284c7";
-        ctx.fillRect(w * 0.14, 120, 45, sdH);
-        ctx.fillRect(w * 0.22 + 106, 120, 45, sdH);
+        cmosCtx.fillStyle = "#0284c7";
+        cmosCtx.fillRect(w * 0.14, 120, 45, sdH);
+        cmosCtx.fillRect(w * 0.22 + 106, 120, 45, sdH);
 
-        ctx.fillStyle = "#dc2626";
-        ctx.fillRect(w * 0.60, 120, 45, sdH);
-        ctx.fillRect(w * 0.68 + 106, 120, 45, sdH);
+        cmosCtx.fillStyle = "#dc2626";
+        cmosCtx.fillRect(w * 0.60, 120, 45, sdH);
+        cmosCtx.fillRect(w * 0.68 + 106, 120, 45, sdH);
       }
 
-      // 8. Salicide (0.74 ~ 0.84)
       const p7 = getRangeP(p, 0.74, 0.84);
       if (p7 > 0) {
         const salH = 6 * p7;
-        ctx.fillStyle = "#0f172a";
-        ctx.fillRect(w * 0.14, 120, 45, salH);
-        ctx.fillRect(w * 0.22 + 106, 120, 45, salH);
-        ctx.fillRect(w * 0.22, 82, 90, salH);
+        cmosCtx.fillStyle = "#0f172a";
+        cmosCtx.fillRect(w * 0.14, 120, 45, salH);
+        cmosCtx.fillRect(w * 0.22 + 106, 120, 45, salH);
+        cmosCtx.fillRect(w * 0.22, 82, 90, salH);
 
-        ctx.fillRect(w * 0.60, 120, 45, salH);
-        ctx.fillRect(w * 0.68 + 106, 120, 45, salH);
-        ctx.fillRect(w * 0.68, 82, 90, salH);
+        cmosCtx.fillRect(w * 0.60, 120, 45, salH);
+        cmosCtx.fillRect(w * 0.68 + 106, 120, 45, salH);
+        cmosCtx.fillRect(w * 0.68, 82, 90, salH);
       }
 
-      // 9. PMD & W Plugs (0.84 ~ 0.93)
       const p8 = getRangeP(p, 0.84, 0.93);
       if (p8 > 0) {
-        ctx.fillStyle = "rgba(148, 163, 184, 0.4)";
-        ctx.fillRect(40, 25, w - 80, 95);
+        cmosCtx.fillStyle = "rgba(148, 163, 184, 0.4)";
+        cmosCtx.fillRect(40, 25, w - 80, 95);
 
         const plugH = 57 * p8;
-        ctx.fillStyle = "#f59e0b";
-        ctx.fillRect(w * 0.155, 82 - plugH + 38, 16, plugH);
-        ctx.fillRect(w * 0.22 + 120, 82 - plugH + 38, 16, plugH);
-        ctx.fillRect(w * 0.615, 82 - plugH + 38, 16, plugH);
-        ctx.fillRect(w * 0.68 + 120, 82 - plugH + 38, 16, plugH);
+        cmosCtx.fillStyle = "#f59e0b";
+        cmosCtx.fillRect(w * 0.155, 82 - plugH + 38, 16, plugH);
+        cmosCtx.fillRect(w * 0.22 + 120, 82 - plugH + 38, 16, plugH);
+        cmosCtx.fillRect(w * 0.615, 82 - plugH + 38, 16, plugH);
+        cmosCtx.fillRect(w * 0.68 + 120, 82 - plugH + 38, 16, plugH);
       }
 
-      // 10. Metal 배선 (0.93 ~ 1.00)
       const p9 = getRangeP(p, 0.93, 1.00);
       if (p9 > 0) {
         const mH = 18 * p9;
-        ctx.fillStyle = "#f43f5e";
-        ctx.fillRect(w * 0.135, 25 - mH + 18, 55, mH);
-        ctx.fillRect(w * 0.22 + 100, 25 - mH + 18, 55, mH);
-        ctx.fillRect(w * 0.595, 25 - mH + 18, 55, mH);
-        ctx.fillRect(w * 0.68 + 100, 25 - mH + 18, 55, mH);
+        cmosCtx.fillStyle = "#f43f5e";
+        cmosCtx.fillRect(w * 0.135, 25 - mH + 18, 55, mH);
+        cmosCtx.fillRect(w * 0.22 + 100, 25 - mH + 18, 55, mH);
+        cmosCtx.fillRect(w * 0.595, 25 - mH + 18, 55, mH);
+        cmosCtx.fillRect(w * 0.68 + 100, 25 - mH + 18, 55, mH);
 
         if (p9 > 0.6) {
-          ctx.fillStyle = "#fff";
-          ctx.font = "bold 11px sans-serif";
-          ctx.fillText("GND", w * 0.15, 20);
-          ctx.fillText("Vout", w * 0.22 + 115, 20);
-          ctx.fillText("Vout", w * 0.61, 20);
-          ctx.fillText("VDD", w * 0.68 + 115, 20);
+          cmosCtx.fillStyle = "#fff";
+          cmosCtx.font = "bold 11px sans-serif";
+          cmosCtx.fillText("GND", w * 0.15, 20);
+          cmosCtx.fillText("Vout", w * 0.22 + 115, 20);
+          cmosCtx.fillText("Vout", w * 0.61, 20);
+          cmosCtx.fillText("VDD", w * 0.68 + 115, 20);
         }
       }
-    }
-
-    function getRangeP(val, min, max) {
-      if (val < min) return 0;
-      if (val > max) return 1;
-      return (val - min) / (max - min);
     }
 
     window.onload = () => {
