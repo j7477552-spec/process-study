@@ -30,7 +30,7 @@
       position: relative;
     }
 
-    /* 토글형 좌측 사이드바 */
+    /* 좌측 계층형 메뉴 (토글 지원) */
     aside {
       width: var(--sidebar-width);
       background-color: var(--panel-bg);
@@ -38,7 +38,7 @@
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
-      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 20;
     }
     aside.collapsed {
@@ -217,6 +217,7 @@
       gap: 8px;
     }
 
+    /* 시뮬레이터 박스 */
     .sim-box {
       background: #040711;
       border-radius: 8px;
@@ -241,6 +242,7 @@
       height: 24px;
     }
 
+    /* SVG 도해 컨테이너 */
     .diagram-container {
       background: #060b17;
       border: 1px solid var(--border-color);
@@ -287,6 +289,7 @@
       border-color: var(--accent-cyan);
     }
 
+    /* 이론 본문 */
     .theory-box {
       background: var(--card-bg);
       border-radius: 8px;
@@ -328,6 +331,7 @@
       border-radius: 6px;
       font-size: 0.9rem;
       font-weight: 600;
+      letter-spacing: 0.02em;
     }
 
     .param-list {
@@ -385,7 +389,7 @@
 </head>
 <body>
 
-  <!-- 좌측 사이드바 (접기/펼치기 가능) -->
+  <!-- 좌측 사이드바 -->
   <aside id="mainSidebar">
     <div class="brand">🔬 반도체 8대 공정 & L02 포토 심화</div>
     <div class="tree-nav" id="accordionNav"></div>
@@ -426,12 +430,12 @@
         </div>
       </div>
 
-      <!-- 2. [멀티패터닝: LELE & SADP 시뮬레이터 카드] -->
+      <!-- 2. [멀티패터닝: LELE & SADP 시뮬레이터 카드 (멀티 패터닝 메뉴 선택 시 활성화)] -->
       <div class="card" id="mptCard" style="display:none;">
         <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
           <span>🖥️ 멀티패터닝(MPT) 공정 연속 단면 시뮬레이터</span>
           <div style="display:flex; gap:6px;">
-            <button class="btn btn-toggle active" id="btnToggleLele" onclick="switchMptMode('LELE')">🎞️ LELE 시뮬레이션</button>
+            <button class="btn btn-toggle active" id="btnToggleLele" onclick="switchMptMode('LELE')">🎞️️ LELE 시뮬레이션</button>
             <button class="btn btn-toggle" id="btnToggleSadp" onclick="switchMptMode('SADP')">🎞️ SADP 시뮬레이션</button>
           </div>
         </div>
@@ -493,7 +497,7 @@
     }
 
     // =========================================================================
-    // SVG 벡터 도해 모음
+    // SVG 벡터 도해 모음 (모든 도해 원본 100% 보존)
     // =========================================================================
     const SVG_DIAGRAMS = {
       photo_sequence: `
@@ -719,7 +723,7 @@
     };
 
     // =========================================================================
-    // 통합 데이터베이스 (모든 세부 단위 공정 100% 보존 + MPT 시뮬레이터 결합)
+    // 통합 데이터베이스 (보내주신 원본 100% 보존 + 멀티패터닝 탭 내 시뮬레이터 결합)
     // =========================================================================
     const fabStructure = [
       {
@@ -737,14 +741,30 @@
                 descHtml: `
                   <div class="theory-section">
                     <h3>💎 초크랄스키(CZ)법 단결정 잉곳 인상</h3>
-                    <p>고순도 다결정 규소(EGS)를 도가니에서 1420℃로 용융시킨 후 종결정(Seed)을 인상하여 단결정 잉곳을 만듭니다. CMOS 표준으로 (100) 결정면을 사용합니다.</p>
+                    <p>고순도 다결정 규소(EGS)를 도가니에 넣고 약 1420℃에서 용융시킨 뒤, 종결정(Seed Crystal)을 회전 접촉시키며 서서히 인상하여 원통형 단결정 잉곳을 성장시킵니다.</p>
+                    <ul>
+                      <li><strong>결정 방위</strong>: CMOS 제조에는 표면 결함(Dangling bond) 밀도가 낮고 산화막 계면 특성이 우수한 <strong>(100) 결정면</strong>을 표준으로 사용합니다.</li>
+                      <li><strong>산소/탄소 불순물 제어</strong>: 도가니 석영(SiO₂)이 녹아들며 산소가 미량 침투하지만, 이는 웨이퍼 내부 게터링(Internal Gettering) 효과를 돕습니다.</li>
+                    </ul>
+                  </div>
+                  <div class="theory-section">
+                    <h3>📐 정밀 기계 가공 프로세스</h3>
+                    <p>잉곳 인상 후 <strong>외경 연마 → 슬라이싱(Sawing) → 에지 라운딩 → 래핑(Lapping) → CMP 연마</strong> 순으로 진행됩니다.</p>
+                    <ul>
+                      <li><strong>Diamond Wire Saw</strong>: 커프 로스(Kerf loss)를 최소화하며 얇은 두께로 슬라이싱합니다.</li>
+                      <li><strong>Edge Grinding</strong>: 웨이퍼 테두리의 응력 집중과 미세 크랙(Chipping) 발생을 방지하기 위해 모서리를 둥글게 가공합니다.</li>
+                    </ul>
                   </div>
                 `,
                 diagramKey: "wafer_ingot",
                 caption: "[도해] CZ법 단결정 실리콘 잉곳 인상 및 웨이퍼 슬라이싱 공정",
-                params: [{ k: "결정 성장법", v: "초크랄스키(CZ)법" }, { k: "온도", v: "약 1420℃" }],
-                quiz: { q: "웨이퍼 테두리의 미세 균열을 막기 위해 둥글게 가공하는 공정은?", a: "에지 라운딩 (Edge Grinding)" },
-                note: "• CZ법 단결정 인상 시 (100)면 웨이퍼가 산화막 계면 특성이 우수함"
+                params: [
+                  { k: "결정 성장법", v: "초크랄스키(Czochralski, CZ)법" },
+                  { k: "공정 온도", v: "약 1420℃ (Si 융점)" },
+                  { k: "표준 결정면", v: "Si (100) Wafer" }
+                ],
+                quiz: { q: "웨이퍼 테두리의 미세 균열을 방지하고 이물질 탈락을 막기 위해 모서리를 둥글게 가공하는 공정은?", a: "에지 라운딩 (Edge Grinding)" },
+                note: "• CZ법 단결정 잉곳 인상 시 도가니와 시드의 반대 방향 회전 속도로 직경과 도펀트 농도를 제어함"
               }
             ]
           },
@@ -757,15 +777,31 @@
                 name: "건식 산화 vs 습식 산화 (Deal-Grove 모델)",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>🔥 열산화 메커니즘</h3>
-                    <p>건식 산화(O₂ 투입)는 치밀하여 Gate Oxide에 쓰이며, 습식 산화(H₂O 투입)는 5~10배 빨라 두꺼운 Field Oxide에 쓰입니다.</p>
+                    <h3>🔥 열산화 메커니즘 & 반응 속도론</h3>
+                    <p>실리콘 표면에 고온(800~1100℃)에서 산소 또는 수증기를 공급하여 치밀한 절연체인 SiO₂를 성장시킵니다.</p>
+                    <ul>
+                      <li><strong>건식 산화 (Dry Oxidation)</strong>: Si + O₂ → SiO₂<br>산소 분자 확산이 느려 성장 속도는 더디지만 막질 밀도가 매우 치밀하고 계면 준위 결함이 낮아 얇은 <strong>Gate Oxide</strong> 형성에 필수적입니다.</li>
+                      <li><strong>습식 산화 (Wet Oxidation)</strong>: Si + 2H₂O → SiO₂ + 2H₂<br>수증기(H₂O)의 확산 속도가 훨씬 빠르므로 건식 대비 5~10배 빠르게 두꺼운 <strong>Field Oxide</strong>를 만듭니다.</li>
+                    </ul>
+                  </div>
+                  <div class="theory-section">
+                    <h3>📊 Deal-Grove 산화 속도 모델</h3>
+                    <p>산화막 두께 x₀와 시간 t의 관계: x₀² + A·x₀ = B·(t + τ)</p>
+                    <ul>
+                      <li><strong>초기 선형 영역</strong>: x₀ ≈ (B/A)·(t + τ) (표면 화학 반응 율속)</li>
+                      <li><strong>후기 포물선 영역</strong>: x₀² ≈ B·t (산화막 내부로의 확산 율속)</li>
+                    </ul>
                   </div>
                 `,
                 diagramKey: "oxidation_comp",
                 caption: "[도해] 건식 산화(Thin Gate Oxide) vs 습식 산화(Thick Field Oxide) 막질 단면",
-                params: [{ k: "건식 반응식", v: "Si + O₂ → SiO₂" }, { k: "습식 반응식", v: "Si + 2H₂O → SiO₂ + 2H₂" }],
-                quiz: { q: "게이트 절연막에 쓰이는 치밀한 고품질 산화법은?", a: "건식 산화 (Dry Oxidation)" },
-                note: "• Deal-Grove 산화 속도 모델 적용"
+                params: [
+                  { k: "건식 속도상수", v: "B/A (선형 속도 상수 지배, 치밀막)" },
+                  { k: "습식 속도상수", v: "B (포물선 확산 계수 지배, 급속 성장)" },
+                  { k: "체적 팽창비", v: "Si 1nm 소모 시 SiO₂ 약 2.17nm 형성" }
+                ],
+                quiz: { q: "성장 속도는 느리지만 계면 결함이 적어 트랜지스터 게이트 절연막에 쓰이는 산화 방식은?", a: "건식 산화 (Dry Oxidation)" },
+                note: "• 실리콘 산화 시 기판 표면의 44%를 파고들며 위로 56% 솟아오름"
               }
             ]
           },
@@ -778,15 +814,37 @@
                 name: "포토 8단계 프로세스 & 3-Baking",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>📋 포토 8대 절차 및 3대 Baking</h3>
-                    <p>HMDS → Spin Coat → Soft Bake(용매 건조) → Align & Exposure → PEB(정재파 완화/CAR촉매) → Develop → Hard Bake(열경화) → ADI 검사.</p>
+                    <h3>📋 포토공정 8대 세부 절차 (L02 p.10)</h3>
+                    <p>반도체 생산 비용의 약 35%, 총 제조 시간의 60%를 차지하는 최고 핵심 공정입니다.</p>
+                    <ul>
+                      <li><strong>1. Surface Prep</strong>: 탈수 베이크 후 HMDS 증기로 웨이퍼 표면 소수화 개질</li>
+                      <li><strong>2. Spin Coat</strong>: 원심력으로 감광액 균일 도포 & EBR(가장자리 비드 린스)</li>
+                      <li><strong>3. Soft Bake (90~110℃)</strong>: 잔류 용매 80~90% 건조, 스트레스 완화</li>
+                      <li><strong>4. Align & Exposure</strong>: 정렬 마크 정합 후 빛(DUV/EUV) 조사</li>
+                      <li><strong>5. PEB (110~120℃)</strong>: 정재파 효과 완화 및 CAR 광산 촉매 열증폭 활성화</li>
+                      <li><strong>6. Develop & Rinse</strong>: 알칼리 현상액(2.38% TMAH) 분사 및 DI 워터 세척</li>
+                      <li><strong>7. Hard Bake (110~130℃)</strong>: 잔여 수분 증발, 고분자 열경화로 내식각성 증대</li>
+                      <li><strong>8. ADI 검사</strong>: 광학 검사로 선폭(CD) 측정 (불량 시 Rework 가능)</li>
+                    </ul>
+                  </div>
+                  <div class="theory-section">
+                    <h3>🔥 3대 Baking 공정의 기능적 분리</h3>
+                    <ul>
+                      <li><span class="code-badge">Soft Bake</span>: 감광액 도포 직후 용매 제거 및 노광 감도 안정화</li>
+                      <li><span class="code-badge">PEB</span>: 기판 반사 간섭 톱니무늬 제거 및 DUV 광산(H⁺) 연쇄 반응 활성화</li>
+                      <li><span class="code-badge">Hard Bake</span>: Tg(유리전이온도) 이상 가열로 Pinhole을 메우고 식각 플라즈마 충격 대비</li>
+                    </ul>
                   </div>
                 `,
                 diagramKey: "photo_sequence",
-                caption: "[도해] 포토공정 8단계 시퀀스 및 3대 Baking 공정 배치도",
-                params: [{ k: "Soft Bake", v: "90~110℃" }, { k: "PEB", v: "110~120℃" }, { k: "Hard Bake", v: "110~130℃" }],
-                quiz: { q: "식각 전 유일하게 Rework 가능한 검사 단계는?", a: "ADI (After Develop Inspection)" },
-                note: "• 포토 공정은 반도체 제조 원가의 약 35% 차지"
+                caption: "[도해] 포토공정 8단계 시퀀스 및 3대 Baking 공정 배치도 (L02 p.10)",
+                params: [
+                  { k: "Soft Bake 조건", v: "90~110℃, Solvent 80% 이상 증발" },
+                  { k: "PEB 조건", v: "110~120℃, 화학증폭형 CAR 반응 촉매화" },
+                  { k: "Hard Bake 조건", v: "110~130℃, PR 고분자 열경화" }
+                ],
+                quiz: { q: "식각 전 유일하게 불량 시 PR을 벗겨내고 웨이퍼 손상 없이 재작업(Rework)할 수 있는 검사는?", a: "현상 후 검사 (ADI, After Develop Inspection)" },
+                note: "• 식각 공정으로 넘어가 실리콘을 파내면 비가역적이므로 ADI의 엄격한 판정이 필수적"
               },
               {
                 id: "ph_hmds",
@@ -794,63 +852,125 @@
                 descHtml: `
                   <div class="theory-section">
                     <h3>🧪 HMDS 소수화 반응 메커니즘 (L02 p.11)</h3>
-                    <p>웨이퍼를 HMDS 증기에 노출시켜 표면의 -OH기를 소수성 작용기인 -O-Si(CH₃)₃(트리메틸실릴기)로 치환하여 PR 접착력을 높입니다. 스핀 코팅 시 외곽 비드는 Thinner(EBR)로 린스합니다.</p>
+                    <p>실리콘 웨이퍼 표면은 공기 중 수분과 결합하여 친수성(Si-OH)을 띱니다. 반면 Photoresist는 유기물 기반이므로 젖음성이 떨어져 접착 불량이 발생합니다.</p>
+                    <ul>
+                      <li><strong>화학 치환</strong>: 웨이퍼를 <strong>HMDS</strong> 증기에 노출시키면 표면의 -OH기가 소수성 작용기인 <strong>-O-Si(CH₃)₃</strong>(트리메틸실릴기)로 치환되며 암모니아(NH₃)가 방출됩니다.</li>
+                      <li><strong>접촉각 증가</strong>: 물 접촉각이 커지며 PR과의 결합력이 극대화되어, 알칼리 현상 시 패턴이 들뜨는(Pattern lifting) 현상을 차단합니다.</li>
+                    </ul>
+                  </div>
+                  <div class="theory-section">
+                    <h3>🌀 Spin Coating 동역학 & Edge Bead 불량 (L02 p.12)</h3>
+                    <ul>
+                      <li><strong>코팅 두께 결정</strong>: 점도가 낮고 회전수(RPM)가 높을수록 얇고 균일한 막이 형성됩니다.</li>
+                      <li><strong>Edge Bead 현상</strong>: 표면장력으로 인해 웨이퍼 최외곽 테두리에 PR이 볼록하게 뭉치는 불량입니다.</li>
+                      <li><strong>EBR (Edge Bead Remover)</strong>: 도포 말기에 저속 회전 상태에서 신너(Thinner) 노즐을 테두리에 분사하여 베벨 부위의 두꺼운 PR을 제거합니다.</li>
+                    </ul>
                   </div>
                 `,
                 diagramKey: "hmds_reaction",
-                caption: "[도해] HMDS 표면 처리 전후의 접촉각 변화 및 소수성화 메커니즘",
-                params: [{ k: "표면 상태 변화", v: "Si-OH (친수성) → Si-O-Si(CH₃)₃ (소수성)" }, { k: "회전수", v: "2000 ~ 4000 RPM" }],
+                caption: "[도해] HMDS 표면 처리 전후의 접촉각 변화 및 소수성화 메커니즘 (L02 p.11)",
+                params: [
+                  { k: "표면 상태 변화", v: "Si-OH (친수성) → Si-O-Si(CH₃)₃ (소수성)" },
+                  { k: "코팅 회전수", v: "2000 ~ 4000 RPM 고속 회전" },
+                  { k: "주요 불량", v: "Streaks(파티클), Edge Bead(뭉침), Pinhole" }
+                ],
                 quiz: { q: "HMDS 처리 후 실리콘 웨이퍼 표면에 결합되는 소수성 작용기는?", a: "-O-Si(CH3)3 (트리메틸실릴기)" },
-                note: "• 현상액 침투에 따른 패턴 리프팅 결함 방지"
+                note: "• 현상액 용해 속도차(Contrast)를 벌리기 위해서라도 베이스 레진의 소수성 유지가 필수적"
               },
               {
                 id: "ph_align",
                 name: "노광 광학계 & Stepper vs Scanner",
                 descHtml: `
                   <div class="theory-section">
+                    <h3>📐 Overlay Accuracy & Alignment (L02 p.13, 14)</h3>
+                    <p>반도체는 20~25회 이상의 포토 공정이 누적되므로 층간 수평 정합도가 생명입니다.</p>
+                    <ul>
+                      <li><strong>Overlay Error</strong>: 하부 층의 중심 좌표와 상부 층 중심 좌표 간의 정렬 오차 편차입니다.</li>
+                      <li><strong>Stitch Error</strong>: 대면적 칩 제작 시 샷(Shot)과 샷 사이의 이음매 정렬 오차입니다.</li>
+                    </ul>
+                  </div>
+                  <div class="theory-section">
                     <h3>🎯 Stepper vs Scanner 광학계 진화 (L02 p.15, 16)</h3>
-                    <p>1:1 Stepper는 렌즈 가장자리에서 구면수차와 색수차가 발생하므로, 직사각형 슬릿(Slit)으로 렌즈 중심부만 주사 통과시키는 스캐너(Scanner)가 수차를 최소화합니다.</p>
+                    <ul>
+                      <li><strong>밀착/근접 노광 한계</strong>: Contact 방식은 마스크 마모 파티클 불량, Proximity 방식은 근접장 회절 왜곡이 심각합니다.</li>
+                      <li><strong>축소 투영 (Projection Aligner)</strong>: 레티클(마스크)을 실제 칩 크기의 4배, 5배로 크게 제작하고 4:1 축소 렌즈로 투영합니다.</li>
+                      <li><strong>Stepper</strong>: 렌즈 전면으로 일괄 노광하므로 가장자리에서 <strong>구면수차와 색수차</strong>가 발생합니다.</li>
+                      <li><strong>Scanner</strong>: 직사각형 <strong>슬릿(Slit)</strong>을 통해 렌즈 중심부만 이용하며, 레티클과 웨이퍼를 동기 주사하여 수차를 최소화합니다.</li>
+                    </ul>
                   </div>
                 `,
                 diagramKey: "rayleigh_dof",
-                caption: "[도해] 축소 투영 렌즈계와 광학 수차 억제 개념도",
-                params: [{ k: "축소 배율", v: "Reticle 4X / 5X → Wafer 1X" }, { k: "수차 저감", v: "Slit 노광 채택" }],
+                caption: "[도해] 축소 투영 렌즈계와 광학 수차 억제 개념도 (L02 p.15)",
+                params: [
+                  { k: "축소 배율", v: "Reticle 4X / 5X → Wafer 1X" },
+                  { k: "주사 메커니즘", v: "Reticle(4v) & Wafer(1v) 반대방향 동기 이동" },
+                  { k: "수차 저감", v: "Slit 노광으로 렌즈 중심의 이상적 굴절면만 활용" }
+                ],
                 quiz: { q: "렌즈 가장자리 왜곡을 막기 위해 렌즈 중심부만 슬릿으로 주사하는 최신 노광 장비는?", a: "스캐너 (Scanner)" },
-                note: "• 펠리클(Pellicle)로 마스크 오염 방지"
+                note: "• Reticle은 먼지 부착을 방지하기 위해 초박막 보호막인 펠리클(Pellicle)을 테두리에 장착"
               },
               {
                 id: "ph_rayleigh",
                 name: "레일리 분해능 공식 & 액침(Immersion)",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>🔬 레일리 분해능(Resolution)과 DOF 트레이드오프 (L02 p.18)</h3>
-                    <p>R = k₁ · (λ / NA), DOF = k₂ · (λ / NA²). NA를 키우면 DOF는 제곱에 반비례해 얕아집니다. ArF 액침은 순수(n=1.44)를 채워 실효 파장을 134nm로 축소, NA 1.35를 달성했습니다.</p>
+                    <h3>🔬 레일리 분해능(Resolution)과 DOF의 트레이드오프 (L02 p.18, 32)</h3>
+                    <p>포토 공정에서 형성 가능한 최소 선폭(Half Pitch)의 물리적 한계 공식입니다.</p>
+                    <ul>
+                      <li><span class="code-badge">R = k₁ · (λ / NA)</span> : 분해능 R이 작을수록 미세 패턴 가공이 가능합니다. 파장(λ)을 줄이거나 개구수(NA)를 키워야 합니다.</li>
+                      <li><span class="code-badge">DOF = k₂ · (λ / NA²) = k₂ · [R² / (k₁² · λ)]</span> : 상이 선명하게 맺히는 수직 깊이 허용 범위(초점심도)입니다.</li>
+                      <li><strong>치명적 딜레마</strong>: 선폭을 줄이기 위해 NA를 키우면 DOF는 <strong>NA의 제곱에 반비례</strong>하여 극도로 얕아집니다. 이를 극복하기 위해 하부 단차를 없애는 <strong>CMP 평탄화</strong>가 필수적입니다.</li>
+                    </ul>
+                  </div>
+                  <div class="theory-section">
+                    <h3>🌊 ArF Immersion (액침 노광) 공법 (L02 p.20~22)</h3>
+                    <p>렌즈와 웨이퍼 사이의 빈 공간을 굴절률이 높은 <strong>초순수(Water, n = 1.44)</strong>로 채워 노광합니다.</p>
+                    <ul>
+                      <li><strong>원리</strong>: NA = n · sinθ. 매질의 굴절률 n이 증가하여 광학계의 NA가 0.93에서 <strong>1.35</strong>로 대폭 증가합니다.</li>
+                      <li><strong>파장 단축 효과</strong>: 193 nm ArF 광원의 실효 파장이 <strong>λ' = λ / n = 193 / 1.44 ≈ 134 nm</strong>로 줄어든 것과 완벽히 동일한 해상도 향상을 얻습니다.</li>
+                    </ul>
                   </div>
                 `,
                 diagramKey: "rayleigh_dof",
-                caption: "[도해] 레일리 분해능(R) 공식과 개구수(NA) 증가 시 초점심도(DOF) 축소 관계",
-                params: [{ k: "Rayleigh 식", v: "R = k₁ · (λ / NA)" }, { k: "초점심도 식", v: "DOF = k₂ · (λ / NA²)" }],
+                caption: "[도해] 레일리 분해능(R) 공식과 개구수(NA) 증가 시 초점심도(DOF) 축소 관계 (L02 p.18)",
+                params: [
+                  { k: "Rayleigh 분해능 식", v: "R = k₁ · (λ / NA)" },
+                  { k: "초점심도(DOF) 식", v: "DOF = k₂ · (λ / NA²)" },
+                  { k: "물 굴절률 (193nm)", v: "n = 1.44 (실효 파장 134nm 환산)" }
+                ],
                 quiz: { q: "렌즈 개구수(NA)를 2배로 키울 때 초점심도(DOF)는 몇 배로 줄어드는가?", a: "1/4배 (NA²에 반비례)" },
-                note: "• DOF 마진 확보를 위해 CMP 평탄화 필수"
+                note: "• 물을 렌즈 아래 채우는 아이디어는 기포 결함(Micro-bubble) 제어가 상용화의 핵심 열쇠였음"
               },
               {
                 id: "ph_ret",
                 name: "해상도 향상 기술 (RET: OPC, OAI, PSM)",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>🛠 공정상수 k₁을 0.25 한계까지 낮추는 RET 기술 (L02 p.19)</h3>
-                    <p>OPC(마스크 왜곡 보정 해머헤드), OAI(경사 입사로 DOF 확보), PSM(180° 위상 반전 상쇄 간섭으로 Contrast 극대화)을 적용합니다.</p>
+                    <h3>🛠️ 공정상수 k₁을 극한(0.25)까지 낮추는 RET 기술 (L02 p.19, 34)</h3>
+                    <p>광원의 파장을 바꾸지 않고 회절 왜곡을 물리적으로 극복하는 3대 기술입니다.</p>
+                    <ul>
+                      <li><strong>OPC (광학 근접 보정)</strong>:
+                        빛의 회절로 패턴 끝이 짧아지는 Line-End Shortening과 모서리가 둥글어지는 Corner Rounding을 방지하기 위해 마스크에 해머헤드나 세리프 보정 패턴을 추가합니다.</li>
+                      <li><strong>OAI (비등축 조명)</strong>:
+                        빛을 수직 입사시키는 대신 조리개를 변형하여 경사각으로 입사시킵니다. 렌즈 진입 각도를 좁혀 0차광과 1차광의 광로차를 줄여 <strong>DOF 마진을 확장</strong>합니다.</li>
+                      <li><strong>PSM (위상 천이 마스크)</strong>:
+                        인접 개구부에 위상을 180° 반전시키는 투명 Shifter를 배치하여 패턴 경계면에서 <strong>상쇄 간섭</strong>을 유도합니다. 빛의 번짐을 막고 경계 강도를 0으로 떨어뜨려 Contrast를 극대화합니다.</li>
+                    </ul>
                   </div>
                 `,
                 diagramKey: "opc_diagram",
-                caption: "[도해] 광 근접 보정(OPC) 적용 전후의 마스크 설계 및 웨이퍼 전사 형상",
-                params: [{ k: "OPC", v: "Line-end shortening, Corner rounding 보정" }, { k: "PSM", v: "180° 상쇄 간섭 유도" }],
-                quiz: { q: "180도 위상차 상쇄 간섭을 통해 경계 번짐을 없애는 마스크는?", a: "PSM (Phase Shift Mask)" },
-                note: "• k₁ = 0.25가 단일 노광의 이론적 한계값"
+                caption: "[도해] 광 근접 보정(OPC) 적용 전후의 마스크 설계 및 웨이퍼 전사 형상 (L02 p.19)",
+                params: [
+                  { k: "OPC 보정 대상", v: "Line-end shortening, Corner rounding" },
+                  { k: "OAI 효과", v: "경사 입사광 간섭을 통한 DOF 공정 윈도우 확대" },
+                  { k: "PSM 위상차", v: "180° 반전 상쇄 간섭을 통한 Contrast 극대화" }
+                ],
+                quiz: { q: "빛의 보강 간섭에 따른 경계 번짐을 막기 위해 180도 위상차 상쇄 간섭을 유도하는 마스크는?", a: "PSM (Phase Shift Mask, 위상 천이 마스크)" },
+                note: "• 단일 노광에서 물리적으로 달성 가능한 k₁의 이론적 한계값은 0.25임"
               },
               {
                 id: "ph_multi",
-                name: "멀티 패터닝 (LELE vs SADP/SAQP) & 시뮬레이터",
+                name: "멀티 패터닝 (LELE vs SADP/SAQP)",
                 isMpt: true,
                 descHtml: `
                   <div class="theory-section">
@@ -865,7 +985,11 @@
                     </ul>
                   </div>
                 `,
-                params: [{ k: "LELE 적용", v: "로직(Logic) 비정형 배선 (오버레이 엄격)" }, { k: "SADP 적용", v: "메모리(DRAM/NAND) 정형 라인 & Fin (스페이서 기반)" }, { k: "SAQP 배율", v: "1회 노광 기반 4배 패턴 증폭 달성" }],
+                params: [
+                  { k: "LELE 적용", v: "로직(Logic) 비정형 배선 (오버레이 엄격)" },
+                  { k: "SADP 적용", v: "메모리(DRAM/NAND) 정형 라인 & Fin (스페이서 기반)" },
+                  { k: "SAQP 배율", v: "1회 노광 기반 4배 패턴 증폭 달성" }
+                ],
                 quiz: { q: "2차 노광 없이 1차 패턴 측벽에 형성된 스페이서를 마스크 삼아 피치를 절반으로 줄이는 기법은?", a: "SADP (Self-Aligned Double Patterning)" },
                 note: "• 상단 시뮬레이터의 버튼을 눌러 LELE와 SADP의 공정 단계별 단면 차이를 직접 비교해 보세요."
               },
@@ -874,45 +998,95 @@
                 name: "EUV (13.5nm) & 0.55 High-NA 애너모픽",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>⚡ 극자외선(EUV) & 애너모픽 기술 (L02 p.26~31)</h3>
-                    <p>파장 13.5nm, Mo-Si 6매 반사거울과 진공 챔버를 씁니다. 0.55 High-NA에서는 거울 대형화로 인한 입·반사광 간섭을 막기 위해 X축 4X, Y축 8X 비대칭 축소하는 애너모픽 렌즈를 채택했습니다.</p>
+                    <h3>⚡ 극자외선(EUV) 노광 시스템 구조 (L02 p.26~29)</h3>
+                    <p>파장이 <strong>13.5 nm</strong>로 ArF 대비 1/14에 불과하여 7 nm 이하 미세 공정의 표준입니다.</p>
+                    <ul>
+                      <li><strong>전반사 거울 광학계</strong>: 13.5 nm 파장은 공기와 석영 렌즈에 100% 흡수되므로, 장비 내부를 <strong>초고진공</strong>으로 유지하고 투영 렌즈 대신 <strong>Mo-Si 6매 다층 반사거울(반사율 약 70%)</strong>과 반사형 마스크를 사용합니다.</li>
+                      <li><strong>EUV 펠리클</strong>: 빛이 거울을 맞고 반사되어 총 2회 통과하므로 90% 이상의 극도로 높은 투과율이 요구됩니다.</li>
+                    </ul>
+                  </div>
+                  <div class="theory-section">
+                    <h3>📐 0.55 High-NA 애너모픽(Anamorphic) 기술 (L02 p.30, 31)</h3>
+                    <ul>
+                      <li><strong>거울 대형화와 간섭 문제</strong>: NA를 기존 0.33에서 0.55로 키우려면 마지막 거울이 거대해져 마스크로 들어가는 입사빔과 반사빔이 서로 부딪히고 그림자 불량이 발생합니다.</li>
+                      <li><strong>Anamorphic 렌즈 채택</strong>: 원형 빛을 가로로 찌그러뜨려 타원형으로 바꾼 뒤, <strong>X축은 1/4 축소, Y축은 1/8 축소</strong>하는 비대칭 배율을 적용하여 빔 간섭을 완벽히 해결합니다.</li>
+                    </ul>
                   </div>
                 `,
                 diagramKey: "euv_anamorphic",
-                caption: "[도해] 0.33 NA 표준 EUV vs 0.55 High-NA 애너모픽 비대칭 광학계 비교",
-                params: [{ k: "EUV 파장", v: "13.5nm (Sn 플라즈마)" }, { k: "High-NA 축소비", v: "X: 4X, Y: 8X 비대칭 축소 (애너모픽)" }],
-                quiz: { q: "EUV High-NA에서 빔 간섭을 해결하기 위해 적용된 축소 기술은?", a: "애너모픽 (Anamorphic) 기술" },
-                note: "• EUV 펠리클 투과율 확보와 LER 제어가 핵심"
+                caption: "[도해] 0.33 NA 표준 EUV vs 0.55 High-NA 애너모픽 비대칭 광학계 비교 (L02 p.30)",
+                params: [
+                  { k: "EUV 광원 파장", v: "13.5nm (Sn 플라즈마 여기)" },
+                  { k: "광학계 소재", v: "Mo-Si 다층 박막 거울 (진공 챔버)" },
+                  { k: "High-NA 축소비", v: "X축 4X, Y축 8X 비대칭 축소 (애너모픽 기술)" }
+                ],
+                quiz: { q: "0.55 High-NA EUV에서 거울 대형화에 따른 입사/반사빔 간섭을 해결하기 위해 적용된 축소 기술은?", a: "애너모픽 (Anamorphic) 기술 (X/Y 비대칭 배율)" },
+                note: "• EUV는 광자 1개의 에너지가 강해 광자 수가 적어 LER 제어가 핵심 과제"
               },
               {
                 id: "ph_pr_chem",
                 name: "Photoresist 재료 화학 (i-line vs DUV CAR)",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>💡 i-line DNQ vs DUV CAR 화학 메커니즘 (L02 p.46~53)</h3>
-                    <p>i-line은 Novolac에 DNQ(PAC)가 결합하여 노광 시 친수성 Indene 카복실산으로 변환됩니다. DUV는 PAG에서 광산(H⁺)을 생성하고 PEB 열로 수백 개의 t-BOC 보호기를 연쇄 탈착시키는 화학증폭형(CAR)을 씁니다.</p>
+                    <h3>💡 i-line용 DNQ-Novolac 감광 메커니즘 (L02 p.46~48)</h3>
+                    <p>용매(PGME), 베이스 폴리머(Novolac), 감광제(DNQ PAC)의 3성분계입니다.</p>
+                    <ul>
+                      <li><strong>노광 전</strong>: 소수성인 DNQ가 Novolac 수지의 -OH기와 수소결합을 형성하여 알칼리 현상액에 녹지 못하도록 <strong>용해 억제제</strong> 역할을 합니다.</li>
+                      <li><strong>노광 후</strong>: 365 nm 자외선을 받으면 N₂ 가스가 빠져나가며 카벤 생성 → 케텐 형성 → 수분과 반응하여 친수성인 <strong>Indene Carboxylic Acid</strong>로 전환됩니다. 수소결합이 풀리며 TMAH 현상액에 급속 용해됩니다.</li>
+                    </ul>
+                  </div>
+                  <div class="theory-section">
+                    <h3>⚡ DUV/EUV용 화학증폭형 감광제 (CAR) (L02 p.51~53)</h3>
+                    <p>단파장에서는 Novolac 대신 PHOST/Acryl계를 쓰고, 약한 광량을 극복하기 위해 CAR 시스템을 도입했습니다.</p>
+                    <ul>
+                      <li><strong>1단계 광산 방출</strong>: 노광 시 <strong>PAG(Photo Acid Generator)</strong>가 광반응하여 미량의 산(H⁺ 프로톤)을 방출합니다.</li>
+                      <li><strong>2단계 화학 증폭</strong>: <strong>PEB 열처리</strong> 동안 방출된 H⁺가 중합체의 보호기(t-BOC)를 공격하여 CO₂와 이소부틸렌을 방출시키고 친수성 -OH기로 바꿉니다. 이때 H⁺는 소모되지 않고 <strong>수백 개의 보호기를 연쇄적으로 분해</strong>합니다.</li>
+                      <li><strong>3단계 Quencher 중화</strong>: 과도한 산 확산으로 비노광부 패턴이 손상되는 것을 막기 위해 미량의 염기성 첨가제(Quencher)가 산을 포획 중화합니다.</li>
+                    </ul>
                   </div>
                 `,
                 diagramKey: "car_chem",
-                caption: "[도해] DUV 화학증폭형 감광제(CAR)의 광산 발생 및 PEB 연쇄 탈보호 반응",
-                params: [{ k: "i-line 활성제", v: "DNQ → Indene carboxylic acid" }, { k: "CAR 핵심 성분", v: "PHOST + PAG(광산발생제) + Quencher(염기)" }],
-                quiz: { q: "CAR PR에서 발생한 Acid가 비노광부로 퍼지는 것을 막는 첨가제는?", a: "Quencher (염기성 물질)" },
-                note: "• CAR PR은 외부 오염 가스(아민기)에 민감하여 T-topping 결함 주의"
+                caption: "[도해] DUV 화학증폭형 감광제(CAR)의 광산 발생 및 PEB 연쇄 탈보호 반응 (L02 p.51)",
+                params: [
+                  { k: "i-line 활성제", v: "DNQ (Diazonaphthoquinone) → Indene carboxylic acid" },
+                  { k: "CAR 핵심 성분", v: "Polymer(PHOST) + PAG(광산발생제) + Quencher(염기)" },
+                  { k: "화학 증폭 원리", v: "1개의 H⁺가 PEB 열로 수백 개의 t-BOC 보호기를 탈착" }
+                ],
+                quiz: { q: "i-line 감광제에서 DNQ가 노광 후 물과 반응하여 생성되는 친수성 알칼리 가용성 물질은?", a: "Indene carboxylic acid" },
+                note: "• CAR PR은 외부 오염 가스(아민기 염기 물질)에 매우 취약하여 T-topping 결함 발생 가능"
               },
               {
                 id: "ph_contrast",
                 name: "PR Contrast 곡선 & 단면 Profile",
                 descHtml: `
                   <div class="theory-section">
-                    <h3>📈 감광제 성능 지표 & Profile (L02 p.44, 57, 58)</h3>
-                    <p>γ = 1 / log₁₀(D₁₀₀/D₀). 사다리꼴(Over-cut) 프로파일은 건식 식각 마스크로 쓰이고, 역사다리꼴(Under-cut) 프로파일(Negative PR)은 금속 Lift-off 공정에 필수적입니다.</p>
+                    <h3>📈 감광제 성능 지표 (Contrast Curve) (L02 p.57, 58)</h3>
+                    <p>노광량(Dose, 로그 스케일)에 따른 현상 후 잔여 PR 두께의 기울기로 감광성을 평가합니다.</p>
+                    <ul>
+                      <li><span class="code-badge">γ = 1 / log₁₀(D₁₀₀ / D₀)</span> : Contrast γ 값이 클수록(기울기가 가파를수록) 빛의 회절 번짐에 영향을 받지 않고 수직에 가까운 선명한 벽면을 형성합니다.</li>
+                      <li><strong>문턱 광량 (D₁₀₀, Eth)</strong>: 노광된 PR이 바닥까지 100% 완벽하게 녹아 없어지는 데 필요한 최소 에너지입니다.</li>
+                      <li><strong>잔막율</strong>: 비노광부가 현상액에 불필요하게 깎여 나가지 않고 남아있는 비율입니다.</li>
+                    </ul>
+                  </div>
+                  <div class="theory-section">
+                    <h3>📐 단면 프로파일에 따른 후속 공정 매칭 (L02 p.44, 58)</h3>
+                    <ul>
+                      <li><strong>사다리꼴 (Over-cut) 프로파일</strong>:
+                        상단에서 빛이 흡수되어 위가 더 많이 깎이는 형태입니다. 측벽 보호막 형성이 유리하여 <strong>건식 식각(Dry Etch) 마스크</strong>로 표준 사용됩니다.</li>
+                      <li><strong>역사다리꼴 (Under-cut) 프로파일</strong>:
+                        상단보다 바닥의 폭이 좁은 역테이퍼 형상입니다. 주로 Negative PR을 사용하며, 금속을 전면 증착한 후 PR을 유기용매로 녹여 떼어내는 <strong>Lift-off 공정</strong>에 필수적입니다. (금속 막질이 연속되지 않고 끊어져 깨끗이 분리됨)</li>
+                    </ul>
                   </div>
                 `,
                 diagramKey: "contrast_curve",
-                caption: "[도해] 감광제 Contrast 곡선 및 식각용(Over-cut) vs Lift-off용(Under-cut) 단면 비교",
-                params: [{ k: "Over-cut 용도", v: "건식 식각 (Dry Etch) 마스크" }, { k: "Under-cut 용도", v: "금속 박막 리프트오프 (Lift-off)" }],
-                quiz: { q: "금속 박막 증착 후 PR을 함께 떼어내는 Lift-off 공정에 적합한 단면 형상은?", a: "역사다리꼴 (Under-cut) 형상" },
-                note: "• Contrast 값이 높을수록 수직 벽면 구현에 유리"
+                caption: "[도해] 감광제 Contrast 곡선 및 식각용(Over-cut) vs Lift-off용(Under-cut) 단면 비교 (L02 p.58)",
+                params: [
+                  { k: "Contrast 공식", v: "γ = [log₁₀(D₁₀₀ / D₀)]⁻¹" },
+                  { k: "Over-cut 용도", v: "Positive PR → 건식 식각 (Dry Etch) 마스크" },
+                  { k: "Under-cut 용도", v: "Negative PR → 금속 박막 리프트오프 (Lift-off)" }
+                ],
+                quiz: { q: "금속 박막 증착 후 PR을 함께 떼어내는 Lift-off 공정에 적합한 단면 형상과 이유는?", a: "역사다리꼴 (Under-cut), 증착 금속이 측면에서 불연속적으로 끊겨 깨끗이 분리되기 때문" },
+                note: "• Contrast 값이 높을수록 빛의 회절에 의한 패턴 가장자리 번짐을 억제할 수 있음"
               }
             ]
           },
@@ -1169,7 +1343,7 @@
     }
 
     // =========================================================================
-    // LELE & SADP 멀티패터닝 연속 시뮬레이터 엔진
+    // LELE & SADP 멀티패터닝 연속 시뮬레이터 엔진 (토글 스위치 및 단면 보정 완비)
     // =========================================================================
     const mptCanvas = document.getElementById("mptCanvas");
     const mptCtx = mptCanvas.getContext("2d");
@@ -1342,6 +1516,7 @@
           }
         }
 
+        // PR 2를 Hardmask 2 표면(y: 135)에 밀착
         const pr2Alpha = p2 < 0.8 ? 1 : (1 - (p2 - 0.8) * 5);
         mptCtx.fillStyle = `rgba(56, 189, 248, ${pr2Alpha})`;
         xCoords2.forEach(x => {
@@ -1368,6 +1543,7 @@
           if (openW > 0) mptCtx.fillRect(startX, 160, openW, subEtchH);
         }
 
+        // Hardmask 1, 2 완전 스트립 소멸
         const maskAlpha = Math.max(0, 1 - p3 * 1.5);
         if (maskAlpha > 0) {
           mptCtx.fillStyle = `rgba(16, 185, 129, ${maskAlpha})`;
